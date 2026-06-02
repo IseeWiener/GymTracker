@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GymTracker">
+  <meta name="theme-color" content="#0d0d0d">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>GymTracker</title>
+</head>
+<body>
+<div id="app">
+
+  <!-- ═══ SCREEN: HOME ═══ -->
+  <div id="screen-home" class="screen active">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub" id="greeting-sub">Guten Morgen 👋</div>
+        <div class="topbar-title" id="greeting-name">Sportler</div>
+      </div>
+      <button class="avatar-btn" id="avatar-btn" onclick="showScreen('settings')">GT</button>
+    </div>
+
+    <div id="active-banner" class="active-banner hidden" onclick="showScreen('workout')">
+      <div>
+        <div class="active-banner-label">Training läuft ●</div>
+        <div class="active-banner-name" id="banner-name">–</div>
+      </div>
+      <div class="active-banner-time" id="banner-time">00:00</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="dash-workouts">0</div>
+        <div class="stat-label">Workouts diese Woche</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="dash-total">0</div>
+        <div class="stat-label">Workouts gesamt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="dash-vol">0 <span class="stat-unit">kg</span></div>
+        <div class="stat-label">Volumen diese Woche</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="dash-prs">0</div>
+        <div class="stat-label">Persönliche Rekorde</div>
+      </div>
+    </div>
+
+    <button class="btn-primary mt16" onclick="showScreen('plans')">
+      <svg class="btn-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Training starten
+    </button>
+
+    <div class="sec-label">Letzte Workouts</div>
+    <div id="history-list">
+      <p class="empty-hint">Noch kein Training gespeichert.</p>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: PLANS (Stufe 1) ═══ -->
+  <div id="screen-plans" class="screen">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub">Wähle deinen</div>
+        <div class="topbar-title">Trainingsplan</div>
+      </div>
+      <button class="icon-btn" onclick="openCreatePlan()" title="Eigenen Plan erstellen">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+    <div id="plan-list"></div>
+    <button class="btn-secondary mt8 mb24" onclick="openCreatePlan()">
+      <svg class="btn-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Eigenen Plan erstellen
+    </button>
+  </div>
+
+  <!-- ═══ SCREEN: PLAN DETAIL (Stufe 2) ═══ -->
+  <div id="screen-plan-detail" class="screen">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="back-btn" onclick="showScreen('plans')">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div>
+          <div class="topbar-sub" id="detail-plan-sub">Trainingsplan</div>
+          <div class="topbar-title" id="detail-plan-title">–</div>
+        </div>
+      </div>
+      <button class="icon-btn" id="detail-edit-btn" onclick="editCurrentPlan()" style="display:none" title="Plan bearbeiten">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+    </div>
+    <div id="detail-workout-list"></div>
+  </div>
+
+  <!-- ═══ SCREEN: WORKOUT ═══ -->
+  <div id="screen-workout" class="screen">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub">Aktives Training</div>
+        <div class="topbar-title" id="workout-title">–</div>
+      </div>
+      <div style="text-align:right">
+        <div class="elapsed-display" id="elapsed-time">00:00</div>
+        <div class="topbar-sub">Dauer</div>
+      </div>
+    </div>
+
+    <div class="timer-card">
+      <div class="timer-circle-wrap">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle class="timer-circle-bg" cx="55" cy="55" r="48"/>
+          <circle class="timer-circle-progress" id="timer-progress" cx="55" cy="55" r="48"
+            stroke-dasharray="301.6" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-center">
+          <div class="timer-display" id="timer-display">03:00</div>
+          <div class="timer-center-label">Pause</div>
+        </div>
+      </div>
+      <div class="timer-bottom-row">
+        <div class="timer-presets">
+          <button class="preset-btn" id="preset-90"  onclick="setTimer(90)">1:30</button>
+          <button class="preset-btn active" id="preset-180" onclick="setTimer(180)">3 min</button>
+          <button class="preset-btn" id="preset-240" onclick="setTimer(240)">4 min</button>
+        </div>
+        <div class="timer-controls">
+          <button class="timer-btn" onclick="toggleTimer()">
+            <svg id="timer-play" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <svg id="timer-pause" viewBox="0 0 24 24" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <button class="timer-btn" onclick="resetTimer()">
+            <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.45"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active exercise card -->
+    <div id="active-ex-wrap"></div>
+    <!-- Queue of remaining exercises -->
+    <div id="queue-wrap"></div>
+
+    <button class="btn-secondary mt8 mb8" onclick="openAddExercise()">
+      <svg class="btn-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Übung hinzufügen
+    </button>
+    <button class="btn-primary mb8" onclick="finishWorkout()">
+      <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Training speichern
+    </button>
+    <button class="btn-danger mb24" onclick="cancelWorkout()">Training abbrechen</button>
+  </div>
+
+  <!-- ═══ SCREEN: PROGRESS ═══ -->
+  <div id="screen-progress" class="screen">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub">Deine Entwicklung</div>
+        <div class="topbar-title">Fortschritt</div>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="prog-total">0</div>
+        <div class="stat-label">Workouts gesamt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="prog-prs">0</div>
+        <div class="stat-label">Persönliche Rekorde</div>
+      </div>
+    </div>
+    <div class="sec-label">Entwicklung</div>
+    <div id="chart-section">
+      <div id="chart-picker" class="chart-picker"></div>
+      <div id="chart-wrap" class="chart-wrap"></div>
+    </div>
+
+    <div class="sec-label">Persönliche Bestleistungen</div>
+    <div id="pr-list"><p class="empty-hint">Noch keine PRs gesetzt.</p></div>
+    <div class="sec-label">Trainings-Verlauf</div>
+    <div id="prog-history"><p class="empty-hint">Noch keine Workouts.</p></div>
+    <div class="sec-label">Aktivitäts-Heatmap</div>
+    <div class="heatmap" id="heatmap"></div>
+    <div class="heatmap-legend">
+      <span><span class="hm-swatch" style="background:#1a1a1a;border:.5px solid #2a2a2a"></span>Kein Training</span>
+      <span><span class="hm-swatch" style="background:rgba(0,232,122,.3)"></span>Training</span>
+      <span><span class="hm-swatch" style="background:var(--accent)"></span>PR-Tag</span>
+    </div>
+  </div>
+
+  <!-- ═══ SCREEN: SETTINGS ═══ -->
+  <div id="screen-settings" class="screen">
+    <div class="topbar">
+      <div>
+        <div class="topbar-sub">Gym Tracker</div>
+        <div class="topbar-title">Einstellungen</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Profil</div>
+    <div class="card" style="display:flex;align-items:center;gap:14px">
+      <div id="profile-avatar" class="profile-avatar">GT</div>
+      <div style="flex:1">
+        <input id="profile-name" class="profile-name-input" value="Sportler" placeholder="Dein Name">
+        <div class="topbar-sub" id="profile-since">Mitglied seit heute</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Mein Ziel</div>
+    <div class="goal-grid">
+      <div class="goal-card active" data-goal="muscle" onclick="selectGoal(this)">
+        <span class="goal-icon">💪</span>
+        <div class="goal-name">Muskelaufbau</div>
+        <div class="goal-desc">Hypertrophie & Volumen</div>
+      </div>
+      <div class="goal-card" data-goal="strength" onclick="selectGoal(this)">
+        <span class="goal-icon">🏋️</span>
+        <div class="goal-name">Kraft</div>
+        <div class="goal-desc">Maximalkraft & PRs</div>
+      </div>
+      <div class="goal-card" data-goal="fat" onclick="selectGoal(this)">
+        <span class="goal-icon">🔥</span>
+        <div class="goal-name">Fettabbau</div>
+        <div class="goal-desc">Kalorienverbrauch</div>
+      </div>
+      <div class="goal-card" data-goal="fitness" onclick="selectGoal(this)">
+        <span class="goal-icon">❤️</span>
+        <div class="goal-name">Fitness</div>
+        <div class="goal-desc">Gesundheit & Ausdauer</div>
+      </div>
+    </div>
+
+    <div class="sec-label">Trainingstage</div>
+    <div class="day-row">
+      <button class="day-btn" data-day="0" onclick="toggleDay(this)">Mo</button>
+      <button class="day-btn active" data-day="1" onclick="toggleDay(this)">Di</button>
+      <button class="day-btn" data-day="2" onclick="toggleDay(this)">Mi</button>
+      <button class="day-btn active" data-day="3" onclick="toggleDay(this)">Do</button>
+      <button class="day-btn active" data-day="4" onclick="toggleDay(this)">Fr</button>
+      <button class="day-btn" data-day="5" onclick="toggleDay(this)">Sa</button>
+      <button class="day-btn" data-day="6" onclick="toggleDay(this)">So</button>
+    </div>
+
+    <div class="sec-label">Erinnerungen</div>
+    <div class="setting-group">
+      <div class="setting-row" onclick="requestNotificationPermission()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-green">🔔</div>
+          <div>
+            <div class="setting-name">Training-Reminder</div>
+            <div class="setting-sub" id="notif-status">Tippen zum Aktivieren</div>
+          </div>
+        </div>
+        <button class="toggle" id="notif-toggle" onclick="event.stopPropagation();requestNotificationPermission()"><div class="toggle-thumb"></div></button>
+      </div>
+      <div class="setting-row" onclick="openTimePicker()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-blue">⏰</div>
+          <div><div class="setting-name">Erinnerungszeit</div><div class="setting-sub" id="reminder-label">17:30 Uhr</div></div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:var(--accent)" id="reminder-display">17:30</span>
+      </div>
+      <div class="setting-row">
+        <div class="setting-left">
+          <div class="setting-icon si-amber">🏆</div>
+          <div><div class="setting-name">PR-Benachrichtigungen</div><div class="setting-sub">Bei neuem Rekord</div></div>
+        </div>
+        <button class="toggle on" onclick="toggleSwitch(this)"><div class="toggle-thumb"></div></button>
+      </div>
+    </div>
+
+    <div class="sec-label">Daten</div>
+    <div class="setting-group">
+      <div class="setting-row" onclick="exportData()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-green">📤</div>
+          <div><div class="setting-name">Daten exportieren</div><div class="setting-sub">Als JSON herunterladen</div></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="setting-row" onclick="clearData()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-red">🗑️</div>
+          <div><div class="setting-name">Alle Daten löschen</div><div class="setting-sub">Nicht rückgängig machbar</div></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:11px;color:var(--text3);padding:20px">GymTracker · Alle Daten lokal gespeichert</p>
+  </div>
+
+  <!-- ═══ BOTTOM NAV ═══ -->
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-screen="home" onclick="showScreen('home')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" data-screen="plans" onclick="showScreen('plans')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span class="nav-label">Pläne</span>
+    </button>
+    <button class="nav-item" data-screen="progress" onclick="showScreen('progress')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="nav-label">Fortschritt</span>
+    </button>
+    <button class="nav-item" data-screen="settings" onclick="showScreen('settings')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="nav-label">Einstellungen</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ═══ MODAL: Übung hinzufügen (im Workout) ═══ -->
+<div id="modal-add-ex" class="modal-overlay" onclick="closeModalById('modal-add-ex',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Übung hinzufügen</div>
+    <input id="ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterExercises()">
+    <div id="ex-category-tabs" class="category-tabs"></div>
+    <div id="exercise-options" class="ex-option-list"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Plan erstellen / bearbeiten ═══ -->
+<div id="modal-create-plan" class="modal-overlay" onclick="closeModalById('modal-create-plan',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="plan-modal-title">Plan erstellen</div>
+
+    <div class="field-group">
+      <label class="field-label">Name des Plans</label>
+      <input id="plan-name" class="field-input" type="text" placeholder="z.B. Push / Pull / Legs">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Emoji</label>
+      <div class="emoji-row">
+        <span class="emoji-opt active" onclick="selectEmoji(this)">💪</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🏋️</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🦵</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🔱</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🔥</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">⚡</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🎯</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">❤️</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Workouts in diesem Plan</label>
+      <div id="plan-workout-list" class="tpl-ex-list"></div>
+      <button class="btn-secondary mt8" onclick="openAddWorkoutToPlan()">
+        <svg class="btn-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Workout hinzufügen
+      </button>
+    </div>
+
+    <button class="btn-primary mt8 mb8" onclick="savePlan()">Plan speichern</button>
+    <div id="plan-delete-wrap" style="display:none">
+      <button class="btn-danger" onclick="deletePlan()">Plan löschen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Workout zum Plan hinzufügen ═══ -->
+<div id="modal-plan-workout" class="modal-overlay" onclick="closeModalById('modal-plan-workout',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Workout erstellen</div>
+
+    <div class="field-group">
+      <label class="field-label">Workout-Name</label>
+      <input id="pw-name" class="field-input" type="text" placeholder="z.B. Push Day A">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Emoji</label>
+      <div class="emoji-row" id="pw-emoji-row">
+        <span class="emoji-opt active" onclick="selectPwEmoji(this)">💪</span>
+        <span class="emoji-opt" onclick="selectPwEmoji(this)">🏋️</span>
+        <span class="emoji-opt" onclick="selectPwEmoji(this)">🦵</span>
+        <span class="emoji-opt" onclick="selectPwEmoji(this)">🔱</span>
+        <span class="emoji-opt" onclick="selectPwEmoji(this)">🔥</span>
+        <span class="emoji-opt" onclick="selectPwEmoji(this)">⚡</span>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Übungen</label>
+      <div id="pw-ex-list" class="tpl-ex-list"></div>
+      <button class="btn-secondary mt8" onclick="openAddExToPw()">
+        <svg class="btn-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Übung hinzufügen
+      </button>
+    </div>
+    <button class="btn-primary mt8" onclick="saveWorkoutToPlan()">Workout speichern</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Übung zum Workout (in Plan-Builder) ═══ -->
+<div id="modal-pw-ex" class="modal-overlay" onclick="closeModalById('modal-pw-ex',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Übung wählen</div>
+    <input id="pw-ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterPwEx()">
+    <div id="pw-ex-options" class="ex-option-list"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Workout bearbeiten ═══ -->
+<div id="modal-edit-workout" class="modal-overlay" onclick="closeModalById('modal-edit-workout',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="modal-title" id="edit-wo-title" style="margin-bottom:0">Workout bearbeiten</div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Name</label>
+      <input id="edit-wo-name" class="field-input" type="text" placeholder="Workout-Name">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Übungen</label>
+      <div id="edit-wo-ex-list"></div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn-secondary" style="flex:1;margin:0" onclick="openAddExToEditWo()">
+          <svg class="btn-icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Hinzufügen
+        </button>
+        <button class="btn-secondary" style="flex:1;margin:0" onclick="openReorderFromEdit()">
+          ↕ Reihenfolge
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-primary mt8 mb8" onclick="saveEditedWorkout()">Änderungen speichern</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Übung zum bearbeiteten Workout hinzufügen ═══ -->
+<div id="modal-edit-wo-ex" class="modal-overlay" onclick="closeModalById('modal-edit-wo-ex',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Übung hinzufügen</div>
+    <input id="edit-wo-ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterEditWoEx()">
+    <div id="edit-wo-ex-options" class="ex-option-list"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Reihenfolge anpassen (im ✏️ Anpassen-Modal) ═══ -->
+<div id="modal-reorder" class="modal-overlay" onclick="closeModalById('modal-reorder',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" id="edit-reorder-title" style="margin-bottom:0">Reihenfolge anpassen</div>
+    </div>
+    <div id="reorder-list" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn-primary mt8" onclick="saveReorder()">Reihenfolge speichern</button>
+  </div>
+</div>
+
+<!-- ═══ TIME PICKER MODAL ═══ -->
+<div id="modal-time" class="modal-overlay" onclick="closeModalById('modal-time',event)">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Erinnerungszeit</div>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:20px">Tippe die Stunden und Minuten ein</p>
+    <div class="time-picker-wrap">
+      <div class="time-picker-col">
+        <button class="time-arrow-btn" onclick="adjustTime('h',1)">▲</button>
+        <input class="time-num-inp" id="tp-hours" type="number" min="0" max="23"
+          value="17" oninput="clampTimeInput(this,0,23)">
+        <button class="time-arrow-btn" onclick="adjustTime('h',-1)">▼</button>
+        <div class="time-unit-label">Stunden</div>
+      </div>
+      <div class="time-picker-sep">:</div>
+      <div class="time-picker-col">
+        <button class="time-arrow-btn" onclick="adjustTime('m',15)">▲</button>
+        <input class="time-num-inp" id="tp-mins" type="number" min="0" max="59"
+          value="30" oninput="clampTimeInput(this,0,59)">
+        <button class="time-arrow-btn" onclick="adjustTime('m',-15)">▼</button>
+        <div class="time-unit-label">Minuten</div>
+      </div>
+    </div>
+    <button class="btn-primary mt8" onclick="confirmTimePicker()">Speichern</button>
+  </div>
+</div>
+
+<!-- ═══ CUSTOM CONFIRM DIALOG ═══ -->
+<div id="confirm-overlay">
+  <div id="confirm-box">
+    <div class="confirm-icon" id="confirm-icon">⚠️</div>
+    <div class="confirm-title" id="confirm-title">Bist du sicher?</div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-btn-cancel" id="confirm-cancel">Abbrechen</button>
+      <button class="confirm-btn-ok" id="confirm-ok">OK</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
