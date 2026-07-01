@@ -299,6 +299,20 @@
         <span class="chevron">›</span>
       </label>
       <input type="file" id="import-file" accept=".json" style="display:none;position:absolute;width:0;height:0" onchange="importData(this)">
+      <div class="setting-row" onclick="sendTestNotification()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-amber">🔔</div>
+          <div><div class="setting-name">Test-Benachrichtigung</div><div class="setting-sub">Prüfen ob Notifications klappen</div></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+      <div class="setting-row" onclick="checkForUpdates()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-blue">🔄</div>
+          <div><div class="setting-name">Nach Updates suchen</div><div class="setting-sub">Neue Version laden</div></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
       <div class="setting-row" onclick="clearData()" style="cursor:pointer">
         <div class="setting-left">
           <div class="setting-icon si-red">🗑️</div>
