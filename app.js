@@ -1579,11 +1579,8 @@ function loadSettingsUI() {
   const s = state.settings;
   document.getElementById('profile-name').value = s.name||'';
   // Reminder time
-  // Update notification status — use stored setting, not browser permission
-  if ('Notification' in window) {
-    const perm = Notification.permission;
-    updateNotifUI(perm);
-  }
+  // Update notification status
+  if ('Notification' in window) updateNotifUI(Notification.permission);
   const t = s.reminderTime || '17:30';
   const rtEl = document.getElementById('reminder-time');
   const rdEl = document.getElementById('reminder-display');
@@ -1649,32 +1646,34 @@ function saveReminderTime(val) {
 // ─── Push Notifications ───────────────────────────────────
 function scheduleReminder(time) {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-  if (Notification.permission === 'default') {
-    Notification.requestPermission().then(p => {
-      if (p === 'granted') _registerReminderAlarm(time);
+  if (Notification.permission !== 'granted') return;
+  navigator.serviceWorker.ready.then(reg => {
+    // Send settings to SW
+    reg.active?.postMessage({
+      type: 'SET_REMINDER', time,
+      days: state.settings.days || [1,3,4],
+      enabled: state.settings.notificationsEnabled
     });
-  } else if (Notification.permission === 'granted') {
-    _registerReminderAlarm(time);
-  }
+    // Periodic Background Sync — Chrome/Android only, silently ignored elsewhere
+    if ('periodicSync' in reg) {
+      reg.periodicSync.register('gym-reminder', { minInterval: 60 * 60 * 1000 })
+        .catch(() => {});
+    }
+  });
 }
 
-function _registerReminderAlarm(time) {
-  if (!navigator.serviceWorker.controller) {
-    // SW not ready yet — retry after it activates
-    navigator.serviceWorker.ready.then(() => {
-      navigator.serviceWorker.controller?.postMessage({
-        type: 'SET_REMINDER', time,
-        days: state.settings.days || [1,3,4],
-        enabled: state.settings.notificationsEnabled
-      });
-    });
-    return;
-  }
-  navigator.serviceWorker.controller.postMessage({
-    type: 'SET_REMINDER', time,
-    days: state.settings.days || [1,3,4],
-    enabled: state.settings.notificationsEnabled
+async function sendTestNotification() {
+  if (!('Notification' in window)) { showToast('⚠️ Nicht unterstützt'); return; }
+  if (Notification.permission !== 'granted') { showToast('❌ Zuerst Reminder aktivieren'); return; }
+  const reg = await navigator.serviceWorker.ready;
+  reg.showNotification('GymTracker 💪 Test', {
+    body: 'Benachrichtigungen funktionieren!',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'gym-test',
+    vibrate: [200, 100, 200],
   });
+  showToast('🔔 Test gesendet — schau in deine Notifications!');
 }
 
 function requestNotificationPermission() {
@@ -1700,51 +1699,18 @@ function updateNotifUI(permission) {
   const toggle = document.getElementById('notif-toggle');
   const status = document.getElementById('notif-status');
   if (!toggle || !status) return;
-  const thumb = toggle.querySelector('.toggle-thumb');
-  // Green only if permission granted AND user explicitly enabled it
-  const isOn = permission === 'granted' && state.settings.notificationsEnabled === true;
-  toggle.classList.toggle('on', isOn);
-  if (thumb) thumb.style.left = isOn ? '22px' : '3px';
-  if (isOn) {
+  if (permission === 'granted') {
+    toggle.classList.add('on');
+    toggle.querySelector('.toggle-thumb').style.left = '22px';
     status.textContent = 'Aktiv · ' + (state.settings.reminderTime || '17:30') + ' Uhr';
   } else if (permission === 'denied') {
+    toggle.classList.remove('on');
+    toggle.querySelector('.toggle-thumb').style.left = '3px';
     status.textContent = 'Blockiert — in Browser-Einstellungen ändern';
   } else {
+    toggle.classList.remove('on');
+    toggle.querySelector('.toggle-thumb').style.left = '3px';
     status.textContent = 'Tippen zum Aktivieren';
-  }
-}
-
-function toggleNotification() {
-  if (!('Notification' in window)) { showToast('⚠️ Nicht unterstützt'); return; }
-  // If currently enabled in state → turn off
-  if (state.settings.notificationsEnabled) {
-    state.settings.notificationsEnabled = false;
-    saveState();
-    updateNotifUI('off');
-    showToast('🔕 Reminder deaktiviert');
-    return;
-  }
-  // Turn on — request permission if needed
-  if (Notification.permission === 'granted') {
-    state.settings.notificationsEnabled = true;
-    saveState();
-    updateNotifUI('granted');
-    scheduleReminder(state.settings.reminderTime || '17:30');
-    showToast('🔔 Reminder aktiviert!');
-  } else if (Notification.permission === 'denied') {
-    showToast('❌ Blockiert — in Browser-Einstellungen erlauben');
-  } else {
-    Notification.requestPermission().then(p => {
-      if (p === 'granted') {
-        state.settings.notificationsEnabled = true;
-        saveState();
-        updateNotifUI('granted');
-        scheduleReminder(state.settings.reminderTime || '17:30');
-        showToast('🔔 Reminder aktiviert!');
-      } else {
-        showToast('❌ Erlaubnis verweigert');
-      }
-    });
   }
 }
 
@@ -1816,84 +1782,11 @@ function selectEmoji(el) {
 //  DATA
 // ═══════════════════════════════════════════════════════
 function exportData() {
-  showConfirm({
-    icon: '📤',
-    title: 'Daten exportieren',
-    msg: `${state.workouts.length} Workouts, ${Object.keys(state.prs).length} PRs und alle Einstellungen werden als JSON gespeichert.`,
-    okLabel: 'Exportieren',
-    okColor: 'var(--accent)',
-    onOk: () => {
-      const json = JSON.stringify(state, null, 2);
-      // Build smart filename: date + workout count so it's always unique when data changed
-      const date     = new Date().toISOString().split('T')[0];
-      const woCount  = state.workouts.length;
-      const prCount  = Object.keys(state.prs).length;
-      const filename = `gymtracker_${date}_${woCount}wo_${prCount}pr.json`;
-      const blob = new Blob([json], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-      showToast('📤 Exportiert!');
-    }
-  });
-}
-
-function importData(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (typeof imported !== 'object' || !imported.workouts) {
-        showToast('❌ Ungültige Datei'); return;
-      }
-      // Store imported data temporarily, show confirm after delay
-      window._pendingImport = imported;
-      setTimeout(() => {
-        const imp = window._pendingImport;
-        if (!imp) return;
-        window._pendingImport = null;
-        const overlay = document.getElementById('confirm-overlay');
-        // Force overlay visible
-        overlay.style.display = 'flex';
-        document.getElementById('confirm-icon').textContent  = '📥';
-        document.getElementById('confirm-title').textContent = 'Backup gefunden';
-        document.getElementById('confirm-msg').textContent   =
-          `${imp.workouts?.length || 0} Workouts · ${Object.keys(imp.prs||{}).length} PRs · ${imp.plans?.length || 0} eigene Pläne. Aktuelle Daten werden überschrieben.`;
-        const okBtn     = document.getElementById('confirm-ok');
-        const cancelBtn = document.getElementById('confirm-cancel');
-        okBtn.textContent      = 'Importieren';
-        okBtn.style.background = 'var(--accent)';
-        okBtn.style.color      = '#000';
-        cancelBtn.textContent  = 'Abbrechen';
-        const close = () => { overlay.style.display = 'none'; overlay.classList.remove('open'); };
-        okBtn.onclick = () => {
-          close();
-          state.workouts       = imp.workouts      || [];
-          state.prs            = imp.prs           || {};
-          state.plans          = imp.plans         || [];
-          state.planOverrides  = imp.planOverrides || {};
-          state.lastUsed       = imp.lastUsed      || {};
-          state.lastUsedPlanId = imp.lastUsedPlanId|| null;
-          state.settings = { ...state.settings, ...(imp.settings || {}) };
-          saveState();
-          refreshDashboard();
-          refreshProgress();
-          loadSettingsUI();
-          const sub = document.getElementById('import-sub');
-          if (sub) sub.textContent = `Zuletzt importiert: ${new Date().toLocaleDateString('de-DE')}`;
-          showToast(`✅ ${state.workouts.length} Workouts importiert!`);
-        };
-        cancelBtn.onclick = close;
-        overlay.onclick = e => { if (e.target === overlay) close(); };
-      }, 500);
-    } catch(err) {
-      showToast('❌ Datei konnte nicht gelesen werden');
-    }
-  };
-  reader.readAsText(file);
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='gymtracker_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click(); showToast('📤 Export gestartet!');
 }
 function clearData() {
   showConfirm({
@@ -1902,10 +1795,14 @@ function clearData() {
     okLabel: 'Alles löschen', okColor: 'var(--red)',
     onOk: () => {
       localStorage.removeItem(STORAGE_KEY);
-      state = { workouts:[], prs:{}, plans:[], settings:{ goal:'muscle', days:[1,3,4], name:'Sportler' } };
+      state={workouts:[],prs:{},plans:[],settings:{goal:'muscle',days:[1,3,4],name:'Sportler'}};
       refreshDashboard(); refreshProgress(); loadSettingsUI(); showToast('🗑️ Daten gelöscht');
     }
   });
+  return;
+  localStorage.removeItem(STORAGE_KEY);
+  state={workouts:[],prs:{},plans:[],settings:{goal:'muscle',days:[1,3,4],unit:'kg',name:'Sportler'}};
+  refreshDashboard(); refreshProgress(); loadSettingsUI(); showToast('🗑️ Daten gelöscht');
 }
 
 function toggleShowAll(elId) {
@@ -1940,42 +1837,49 @@ function setGreeting() {
 // ═══════════════════════════════════════════════════════
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then(reg => {
-        // Check for updates every time the app loads
-        reg.update();
-        // Listen for a new SW waiting to activate
-        reg.addEventListener('updatefound', () => {
-          const newSW = reg.installing;
-          newSW.addEventListener('statechange', () => {
-            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-              // New version available — show update banner
-              showUpdateBanner();
-            }
-          });
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
         });
-      })
-      .catch(e => console.warn('SW failed', e));
-
-    // When SW activates (after skipWaiting), reload the page
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      window.location.reload();
-    });
+      });
+    }).catch(e => console.warn('SW failed', e));
+    navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
   });
 }
 
 function showUpdateBanner() {
-  const banner = document.getElementById('update-banner');
-  if (banner) banner.classList.remove('hidden');
+  const b = document.getElementById('update-banner');
+  if (b) b.classList.remove('hidden');
 }
 
 function applyUpdate() {
-  const banner = document.getElementById('update-banner');
-  if (banner) banner.classList.add('hidden');
-  // Tell SW to skip waiting and activate immediately
+  document.getElementById('update-banner')?.classList.add('hidden');
   navigator.serviceWorker.getRegistration().then(reg => {
     if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
   });
+}
+
+async function checkForUpdates() {
+  if (!('serviceWorker' in navigator)) { showToast('⚠️ Nicht unterstützt'); return; }
+  showToast('🔄 Suche nach Updates...');
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) { showToast('⚠️ Kein Service Worker aktiv'); return; }
+    await reg.update();
+    if (reg.waiting) {
+      showUpdateBanner();
+      showToast('🆕 Update gefunden!');
+    } else {
+      showToast('✅ App ist bereits aktuell!');
+    }
+  } catch(e) {
+    showToast('❌ Update-Suche fehlgeschlagen');
+  }
 }
 
 
