@@ -1776,6 +1776,59 @@ function exportData() {
   a.download='gymtracker_'+new Date().toISOString().split('T')[0]+'.json';
   a.click(); showToast('📤 Export gestartet!');
 }
+
+function triggerImport() {
+  document.getElementById('import-file').value = '';
+  document.getElementById('import-file').click();
+}
+
+function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+
+      // Validate it looks like a gymtracker backup
+      if (typeof imported !== 'object' || !imported.workouts) {
+        showToast('❌ Ungültige Datei'); return;
+      }
+
+      showConfirm({
+        icon: '📥',
+        title: 'Daten importieren',
+        msg: `${imported.workouts?.length || 0} Workouts, ${Object.keys(imported.prs||{}).length} PRs, ${imported.plans?.length || 0} eigene Pläne werden geladen. Aktuelle Daten werden überschrieben.`,
+        okLabel: 'Importieren',
+        okColor: 'var(--accent)',
+        onOk: () => {
+          // Merge carefully — keep keys that exist in current state if missing in import
+          state.workouts      = imported.workouts      || [];
+          state.prs           = imported.prs           || {};
+          state.plans         = imported.plans         || [];
+          state.planOverrides = imported.planOverrides || {};
+          state.lastUsed      = imported.lastUsed      || {};
+          state.lastUsedPlanId= imported.lastUsedPlanId|| null;
+          // Merge settings — keep current name/goal if not in backup
+          state.settings = { ...state.settings, ...(imported.settings || {}) };
+
+          saveState();
+          refreshDashboard();
+          refreshProgress();
+          loadSettingsUI();
+
+          const sub = document.getElementById('import-sub');
+          if (sub) sub.textContent = `Zuletzt importiert: ${new Date().toLocaleDateString('de-DE')}`;
+
+          showToast(`✅ ${state.workouts.length} Workouts importiert!`);
+        }
+      });
+    } catch(err) {
+      showToast('❌ Datei konnte nicht gelesen werden');
+    }
+  };
+  reader.readAsText(file);
+}
 function clearData() {
   showConfirm({
     icon: '💣', title: 'Alle Daten löschen',
