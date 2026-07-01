@@ -1644,22 +1644,70 @@ function saveReminderTime(val) {
 }
 
 // ─── Push Notifications ───────────────────────────────────
+const SUPABASE_URL  = 'https://vijzeggqkkgahluwodsg.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpanplZ2dxa2tnYWhsdXdvZHNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MDMxOTIsImV4cCI6MjA5ODQ3OTE5Mn0.cAQJ3SZEbjLXEpHi9KKzE7NYciy0CrlNmU6xKSA1GxU';
+const VAPID_PUBLIC  = 'BDAkrEtybAo51LVRwHXlfBWgPHqwLE1VWdU2Jhltbj4Hu2gjulrIHMw9H-QaIVTPyatE_19IRxhmZGe33Wsd9Ng';
+
+async function subscribeWebPush(time) {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  if (Notification.permission !== 'granted') return;
+
+  const reg = await navigator.serviceWorker.ready;
+
+  // Get or create push subscription
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+    });
+  }
+
+  // Save subscription to Supabase
+  const subId = localStorage.getItem('gymtracker_sub_id');
+  const method = subId ? 'PATCH' : 'POST';
+  const url = subId
+    ? `${SUPABASE_URL}/rest/v1/push_subscriptions?id=eq.${subId}`
+    : `${SUPABASE_URL}/rest/v1/push_subscriptions`;
+
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify({
+      subscription: sub.toJSON(),
+      reminder_time: time || '17:30',
+      reminder_days: state.settings.days || [1,3,4],
+      enabled: state.settings.notificationsEnabled
+    })
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    if (!subId && data[0]?.id) {
+      localStorage.setItem('gymtracker_sub_id', data[0].id);
+    }
+    showToast('🔔 Reminder gespeichert!');
+  } else {
+    console.error('Push sub error:', await res.text());
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
 function scheduleReminder(time) {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
   if (Notification.permission !== 'granted') return;
-  navigator.serviceWorker.ready.then(reg => {
-    // Send settings to SW
-    reg.active?.postMessage({
-      type: 'SET_REMINDER', time,
-      days: state.settings.days || [1,3,4],
-      enabled: state.settings.notificationsEnabled
-    });
-    // Periodic Background Sync — Chrome/Android only, silently ignored elsewhere
-    if ('periodicSync' in reg) {
-      reg.periodicSync.register('gym-reminder', { minInterval: 60 * 60 * 1000 })
-        .catch(() => {});
-    }
-  });
+  subscribeWebPush(time).catch(e => console.warn('Push subscribe error:', e));
 }
 
 async function sendTestNotification() {
