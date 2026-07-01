@@ -285,6 +285,14 @@
         </div>
         <span class="chevron">›</span>
       </div>
+      <div class="setting-row" onclick="triggerImport()" style="cursor:pointer">
+        <div class="setting-left">
+          <div class="setting-icon si-blue">📥</div>
+          <div><div class="setting-name">Daten importieren</div><div class="setting-sub" id="import-sub">JSON-Backup laden</div></div>
+        </div>
+        <span class="chevron">›</span>
+      </div>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
       <div class="setting-row" onclick="clearData()" style="cursor:pointer">
         <div class="setting-left">
           <div class="setting-icon si-red">🗑️</div>
