@@ -1,9 +1,8 @@
-const CACHE = 'gymtracker-v2';
+const CACHE = 'gymtracker-v4';
 const ASSETS = ['./index.html','./style.css','./app.js','./manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -21,32 +20,51 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ── Reminder alarm ────────────────────────────────────
-let reminderTime = '17:30';
-let reminderDays = [1,3,4];
-let reminderInterval = null;
+// ── Settings ──────────────────────────────────────────
+let reminderTime    = '17:30';
+let reminderDays    = [1, 3, 4];
+let reminderEnabled = false;
+let lastNotifDate   = '';
 
+// ── Messages from app ─────────────────────────────────
 self.addEventListener('message', e => {
+  if (e.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
   if (e.data?.type === 'SET_REMINDER') {
-    reminderTime = e.data.time || '17:30';
-    reminderDays = e.data.days || [1,3,4];
-    clearInterval(reminderInterval);
-    // Check every minute if it's time to notify
-    reminderInterval = setInterval(checkReminder, 60000);
+    reminderTime    = e.data.time    || '17:30';
+    reminderDays    = e.data.days    || [1, 3, 4];
+    reminderEnabled = e.data.enabled || false;
   }
 });
 
+// ── Check every minute via SW periodic sync ───────────
+// Fallback: check on fetch events (app is open)
+self.addEventListener('fetch', () => checkReminder(), { passive: true });
+
+// Also use setInterval when SW is alive
+setInterval(checkReminder, 60 * 1000);
+
 function checkReminder() {
-  const now  = new Date();
-  const day  = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Mon
-  const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  if (reminderDays.includes(day) && hhmm === reminderTime) {
-    self.registration.showNotification('GymTracker 💪', {
-      body: 'Zeit für dein Training! Du schaffst das.',
-      icon: 'https://via.placeholder.com/192x192/00e87a/000000?text=GT',
-      badge: 'https://via.placeholder.com/96x96/00e87a/000000?text=GT',
-      tag: 'gym-reminder',
-      renotify: false,
-    });
-  }
+  if (!reminderEnabled) return;
+  const now   = new Date();
+  const day   = now.getDay() === 0 ? 6 : now.getDay() - 1; // Mon=0
+  const hhmm  = pad(now.getHours()) + ':' + pad(now.getMinutes());
+  const today = now.toISOString().split('T')[0];
+
+  if (!reminderDays.includes(day)) return;
+  if (hhmm !== reminderTime) return;
+  if (lastNotifDate === today) return; // already sent today
+
+  lastNotifDate = today;
+  self.registration.showNotification('GymTracker 💪', {
+    body: 'Zeit für dein Training! Du schaffst das.',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'gym-reminder',
+    renotify: false,
+    vibrate: [200, 100, 200],
+  });
 }
+
+function pad(n) { return String(n).padStart(2, '0'); }
