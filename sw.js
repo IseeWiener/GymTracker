@@ -1,8 +1,9 @@
-const CACHE = 'gymtracker-v5';
+const CACHE = 'gymtracker-v6';
 const ASSETS = ['./index.html','./style.css','./app.js','./manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {
@@ -20,51 +21,38 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ── Messages from app ─────────────────────────────────
-let reminderTime    = '17:30';
-let reminderDays    = [1, 3, 4];
-let reminderEnabled = false;
-let lastNotifDate   = '';
+// ── Handle incoming push from server ──────────────────
+self.addEventListener('push', e => {
+  let data = { title: 'GymTracker 💪', body: 'Zeit für dein Training!' };
+  try { if (e.data) data = e.data.json(); } catch(err) {}
 
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    './icon-192.png',
+      badge:   './icon-192.png',
+      tag:     'gym-reminder',
+      renotify: false,
+      vibrate: [200, 100, 200],
+    })
+  );
+});
+
+// ── Notification click → open app ─────────────────────
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(
+    clients.matchAll({ type: 'window' }).then(list => {
+      for (const client of list) {
+        if (client.url.includes('GymTracker') && 'focus' in client)
+          return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./');
+    })
+  );
+});
+
+// ── SKIP_WAITING for updates ──────────────────────────
 self.addEventListener('message', e => {
   if (e.data?.type === 'SKIP_WAITING') self.skipWaiting();
-  if (e.data?.type === 'SET_REMINDER') {
-    reminderTime    = e.data.time    || '17:30';
-    reminderDays    = e.data.days    || [1, 3, 4];
-    reminderEnabled = e.data.enabled || false;
-  }
 });
-
-// ── Periodic Background Sync (Chrome/Android) ─────────
-self.addEventListener('periodicsync', e => {
-  if (e.tag === 'gym-reminder') {
-    e.waitUntil(checkReminder());
-  }
-});
-
-// ── Fallback: check on fetch while app is open ────────
-self.addEventListener('fetch', () => { checkReminder(); }, { passive: true });
-
-function checkReminder() {
-  if (!reminderEnabled) return;
-  const now   = new Date();
-  const day   = now.getDay() === 0 ? 6 : now.getDay() - 1;
-  const hhmm  = pad(now.getHours()) + ':' + pad(now.getMinutes());
-  const today = now.toISOString().split('T')[0];
-
-  if (!reminderDays.includes(day)) return;
-  if (hhmm !== reminderTime) return;
-  if (lastNotifDate === today) return;
-
-  lastNotifDate = today;
-  return self.registration.showNotification('GymTracker 💪', {
-    body: 'Zeit für dein Training! Du schaffst das.',
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    tag: 'gym-reminder',
-    renotify: false,
-    vibrate: [200, 100, 200],
-  });
-}
-
-function pad(n) { return String(n).padStart(2, '0'); }
