@@ -25,24 +25,36 @@ function showConfirm({ icon='⚠️', title, msg, okLabel='OK', okColor='var(--r
 //  EXERCISE DATABASE
 // ═══════════════════════════════════════════════════════
 const EXERCISES = [
-  { id:'bench',        name:'Bankdrücken',             muscle:'Brust',         cat:'Brust',     icon:'💪' },
-  { id:'incline',      name:'Schrägbankdrücken',        muscle:'Brust (oben)',  cat:'Brust',     icon:'💪' },
-  { id:'decline',      name:'Flachbank KH',             muscle:'Brust (unten)', cat:'Brust',     icon:'💪' },
-  { id:'fly',          name:'Kabelzug Fliegende',       muscle:'Brust',         cat:'Brust',     icon:'💪' },
-  { id:'pec_deck',     name:'Pec Deck',                 muscle:'Brust',         cat:'Brust',     icon:'💪' },
-  { id:'dips_chest',   name:'Dips (brustbetont)',       muscle:'Brust / Tri',   cat:'Brust',     icon:'💪' },
+  // ── Brust ──────────────────────────────────────────────
+  { id:'bench',        name:'Bankdrücken',             muscle:'Brust',         cat:'Brust',     icon:'🏋️' },
+  { id:'incline',      name:'Schrägbankdrücken',        muscle:'Brust (oben)',  cat:'Brust',     icon:'🏋️' },
+  { id:'decline',      name:'Flachbank KH',             muscle:'Brust (unten)', cat:'Brust',     icon:'🏋️' },
+  { id:'fly',          name:'Kabelzug Fliegende',       muscle:'Brust',         cat:'Brust',     icon:'🏋️' },
+  { id:'pec_deck',     name:'Butterfly / Pec Deck',     muscle:'Brust',         cat:'Brust',     icon:'🏋️' },
+  { id:'dips_chest',   name:'Dips (brustbetont)',       muscle:'Brust / Tri',   cat:'Brust',     icon:'🏋️' },
+  { id:'cable_cross',  name:'Kabelzug Crossover',       muscle:'Brust',         cat:'Brust',     icon:'🏋️' },
+  { id:'push_up',      name:'Liegestütze',              muscle:'Brust',         cat:'Brust',     icon:'🏋️' },
+  // ── Schultern ──────────────────────────────────────────
   { id:'ohp',          name:'Schulterdrücken',          muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
   { id:'lateral',      name:'Seitheben',                muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
   { id:'front_raise',  name:'Frontheben',               muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
   { id:'face_pull',    name:'Face Pulls',               muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
   { id:'shrug',        name:'Shrugs',                   muscle:'Trapez',        cat:'Schultern', icon:'🏋️' },
-  { id:'triceps_kabel',name:'Trizeps Kabelzug',         muscle:'Trizeps',       cat:'Arme',      icon:'💥' },
-  { id:'skull',        name:'Skull Crushers',           muscle:'Trizeps',       cat:'Arme',      icon:'💥' },
-  { id:'tri_overhead', name:'Trizeps Overhead',         muscle:'Trizeps',       cat:'Arme',      icon:'💥' },
-  { id:'dips_tri',     name:'Dips (trizepsbetont)',     muscle:'Trizeps',       cat:'Arme',      icon:'💥' },
-  { id:'curl',         name:'Bizeps Curls',             muscle:'Bizeps',        cat:'Arme',      icon:'💥' },
-  { id:'hammer',       name:'Hammer Curls',             muscle:'Bizeps',        cat:'Arme',      icon:'💥' },
-  { id:'conc_curl',    name:'Konzentrations Curls',     muscle:'Bizeps',        cat:'Arme',      icon:'💥' },
+  { id:'arnold_press', name:'Arnold Press',             muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
+  { id:'upright_row',  name:'Aufrechtes Rudern',        muscle:'Schultern',     cat:'Schultern', icon:'🏋️' },
+  // ── Arme ───────────────────────────────────────────────
+  { id:'triceps_kabel',name:'Trizeps Kabelzug',         muscle:'Trizeps',       cat:'Arme',      icon:'💪' },
+  { id:'skull',        name:'Skull Crushers',           muscle:'Trizeps',       cat:'Arme',      icon:'💪' },
+  { id:'tri_overhead', name:'Trizeps Overhead',         muscle:'Trizeps',       cat:'Arme',      icon:'💪' },
+  { id:'dips_tri',     name:'Dips (trizepsbetont)',     muscle:'Trizeps',       cat:'Arme',      icon:'💪' },
+  { id:'tri_kickback', name:'Trizeps Kickback',         muscle:'Trizeps',       cat:'Arme',      icon:'💪' },
+  { id:'curl',         name:'Bizeps Curls',             muscle:'Bizeps',        cat:'Arme',      icon:'💪' },
+  { id:'hammer',       name:'Hammer Curls',             muscle:'Bizeps',        cat:'Arme',      icon:'💪' },
+  { id:'conc_curl',    name:'Konzentrations Curls',     muscle:'Bizeps',        cat:'Arme',      icon:'💪' },
+  { id:'cable_curl',   name:'Kabelzug Curls',           muscle:'Bizeps',        cat:'Arme',      icon:'💪' },
+  { id:'preacher',     name:'Preacher Curls',           muscle:'Bizeps',        cat:'Arme',      icon:'💪' },
+  { id:'reverse_curl', name:'Reverse Curls',            muscle:'Unterarme',     cat:'Arme',      icon:'💪' },
+  // ── Beine ──────────────────────────────────────────────
   { id:'squat',        name:'Kniebeuge',                muscle:'Quadrizeps',    cat:'Beine',     icon:'🦵' },
   { id:'leg_press',    name:'Beinpresse',               muscle:'Quadrizeps',    cat:'Beine',     icon:'🦵' },
   { id:'lunges',       name:'Ausfallschritte',          muscle:'Beine',         cat:'Beine',     icon:'🦵' },
@@ -50,18 +62,35 @@ const EXERCISES = [
   { id:'leg_curl',     name:'Beincurl',                 muscle:'Hamstrings',    cat:'Beine',     icon:'🦵' },
   { id:'rdl',          name:'Rumänisches Kreuzheben',   muscle:'Hamstrings',    cat:'Beine',     icon:'🦵' },
   { id:'calf',         name:'Wadenheben',               muscle:'Waden',         cat:'Beine',     icon:'🦵' },
+  { id:'hip_thrust',   name:'Hip Thrust',               muscle:'Gesäß',         cat:'Beine',     icon:'🦵' },
+  { id:'sumo_squat',   name:'Sumo Kniebeuge',           muscle:'Innenschenkel', cat:'Beine',     icon:'🦵' },
+  { id:'step_up',      name:'Step Ups',                 muscle:'Beine',         cat:'Beine',     icon:'🦵' },
+  // ── Rücken ─────────────────────────────────────────────
   { id:'dead',         name:'Kreuzheben',               muscle:'Rücken / Beine',cat:'Rücken',    icon:'🔱' },
   { id:'pullup',       name:'Klimmzüge',                muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
+  { id:'chinup',       name:'Chin Ups',                 muscle:'Rücken / Bizeps',cat:'Rücken',   icon:'🔱' },
   { id:'row_kabel',    name:'Rudern Kabelzug',          muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
   { id:'row_lh',       name:'Rudern Langhantel',        muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
+  { id:'tbar_row',     name:'T-Bar Row',                muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
   { id:'lat_pull',     name:'Latziehen',                muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
+  { id:'seated_row',   name:'Rudern sitzend (Maschine)',muscle:'Rücken',        cat:'Rücken',    icon:'🔱' },
   { id:'hyperext',     name:'Hyperextensions',          muscle:'Unterer Rücken',cat:'Rücken',    icon:'🔱' },
+  { id:'good_morning', name:'Good Mornings',            muscle:'Unterer Rücken',cat:'Rücken',    icon:'🔱' },
+  // ── Core ───────────────────────────────────────────────
   { id:'plank',        name:'Plank',                    muscle:'Core',          cat:'Core',      icon:'🔥' },
   { id:'crunch',       name:'Crunches',                 muscle:'Bauch',         cat:'Core',      icon:'🔥' },
   { id:'leg_raise',    name:'Beinheben',                muscle:'Bauch',         cat:'Core',      icon:'🔥' },
   { id:'ab_wheel',     name:'Ab Wheel',                 muscle:'Core',          cat:'Core',      icon:'🔥' },
+  { id:'russian_twist',name:'Russian Twists',           muscle:'Seitliche Bauch',cat:'Core',     icon:'🔥' },
+  { id:'cable_crunch', name:'Kabelzug Crunch',          muscle:'Bauch',         cat:'Core',      icon:'🔥' },
+  { id:'side_plank',   name:'Seitstütz',                muscle:'Seitliche Bauch',cat:'Core',     icon:'🔥' },
 ];
 const CATEGORIES = ['Alle','Brust','Schultern','Arme','Beine','Rücken','Core'];
+
+// Helper: get all exercises including user-created ones
+function getAllExercises() {
+  return [...EXERCISES, ...(state.customExercises || [])];
+}
 
 // ═══════════════════════════════════════════════════════
 //  DEFAULT PLANS  (Plan → Workouts → Übungen)
@@ -72,21 +101,21 @@ const DEFAULT_PLANS = [
     workouts:[
       { id:'ppl-push', name:'Push Day', icon:'💪',
         exercises:[
-          {id:'bench',sets:4,reps:8},{id:'incline',sets:3,reps:10},
-          {id:'ohp',sets:3,reps:10},{id:'lateral',sets:3,reps:15},
-          {id:'triceps_kabel',sets:3,reps:12},{id:'skull',sets:3,reps:10}
+          {id:'bench',sets:3,reps:10},{id:'incline',sets:3,reps:10},
+          {id:'ohp',sets:3,reps:10},{id:'lateral',sets:3,reps:10},
+          {id:'triceps_kabel',sets:3,reps:10},{id:'skull',sets:3,reps:10}
         ]},
       { id:'ppl-pull', name:'Pull Day', icon:'🔱',
         exercises:[
-          {id:'pullup',sets:4,reps:8},{id:'row_kabel',sets:3,reps:10},
-          {id:'lat_pull',sets:3,reps:12},{id:'face_pull',sets:3,reps:15},
-          {id:'curl',sets:3,reps:12},{id:'hammer',sets:3,reps:12}
+          {id:'pullup',sets:3,reps:10},{id:'row_kabel',sets:3,reps:10},
+          {id:'lat_pull',sets:3,reps:10},{id:'face_pull',sets:3,reps:10},
+          {id:'curl',sets:3,reps:10},{id:'hammer',sets:3,reps:10}
         ]},
       { id:'ppl-legs', name:'Leg Day', icon:'🦵',
         exercises:[
-          {id:'squat',sets:4,reps:8},{id:'leg_press',sets:3,reps:12},
-          {id:'rdl',sets:3,reps:10},{id:'leg_curl',sets:3,reps:12},
-          {id:'leg_ext',sets:3,reps:15},{id:'calf',sets:4,reps:15}
+          {id:'squat',sets:3,reps:10},{id:'leg_press',sets:3,reps:10},
+          {id:'rdl',sets:3,reps:10},{id:'leg_curl',sets:3,reps:10},
+          {id:'leg_ext',sets:3,reps:10},{id:'calf',sets:3,reps:10}
         ]},
     ]
   },
@@ -95,15 +124,15 @@ const DEFAULT_PLANS = [
     workouts:[
       { id:'ul-upper', name:'Upper Body', icon:'🏋️',
         exercises:[
-          {id:'bench',sets:4,reps:8},{id:'row_lh',sets:4,reps:8},
-          {id:'ohp',sets:3,reps:10},{id:'pullup',sets:3,reps:8},
-          {id:'curl',sets:2,reps:12},{id:'triceps_kabel',sets:2,reps:12}
+          {id:'bench',sets:3,reps:10},{id:'row_lh',sets:3,reps:10},
+          {id:'ohp',sets:3,reps:10},{id:'pullup',sets:3,reps:10},
+          {id:'curl',sets:3,reps:10},{id:'triceps_kabel',sets:3,reps:10}
         ]},
       { id:'ul-lower', name:'Lower Body', icon:'🦵',
         exercises:[
-          {id:'squat',sets:4,reps:6},{id:'dead',sets:3,reps:5},
-          {id:'lunges',sets:3,reps:10},{id:'leg_curl',sets:3,reps:12},
-          {id:'calf',sets:4,reps:15}
+          {id:'squat',sets:3,reps:10},{id:'dead',sets:3,reps:10},
+          {id:'lunges',sets:3,reps:10},{id:'leg_curl',sets:3,reps:10},
+          {id:'calf',sets:3,reps:10}
         ]},
     ]
   },
@@ -112,15 +141,15 @@ const DEFAULT_PLANS = [
     workouts:[
       { id:'fb-a', name:'Fullbody A', icon:'⚡',
         exercises:[
-          {id:'squat',sets:3,reps:8},{id:'bench',sets:3,reps:8},
-          {id:'row_kabel',sets:3,reps:10},{id:'ohp',sets:2,reps:10},
-          {id:'curl',sets:2,reps:12},{id:'plank',sets:3,reps:30}
+          {id:'squat',sets:3,reps:10},{id:'bench',sets:3,reps:10},
+          {id:'row_kabel',sets:3,reps:10},{id:'ohp',sets:3,reps:10},
+          {id:'curl',sets:3,reps:10},{id:'plank',sets:3,reps:10}
         ]},
       { id:'fb-b', name:'Fullbody B', icon:'⚡',
         exercises:[
-          {id:'dead',sets:3,reps:5},{id:'incline',sets:3,reps:10},
-          {id:'pullup',sets:3,reps:8},{id:'lateral',sets:3,reps:15},
-          {id:'triceps_kabel',sets:2,reps:12},{id:'leg_raise',sets:3,reps:15}
+          {id:'dead',sets:3,reps:10},{id:'incline',sets:3,reps:10},
+          {id:'pullup',sets:3,reps:10},{id:'lateral',sets:3,reps:10},
+          {id:'triceps_kabel',sets:3,reps:10},{id:'leg_raise',sets:3,reps:10}
         ]},
     ]
   },
@@ -131,10 +160,11 @@ const DEFAULT_PLANS = [
 // ═══════════════════════════════════════════════════════
 const STORAGE_KEY = 'gymtracker_v3';
 let state = {
-  workouts: [],   // completed workout logs
+  workouts: [],
   prs: {},
-  plans: [],      // user-created plans
-  settings: { goal:'muscle', days:[1,3,4], unit:'kg', name:'Sportler' }
+  plans: [],
+  customExercises: [],
+  settings: { goal:'muscle', days:[1,3,4], name:'Sportler' }
 };
 
 function loadState() {
@@ -142,6 +172,7 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) state = { ...state, ...JSON.parse(raw) };
     if (!state.plans) state.plans = [];
+    if (!state.customExercises) state.customExercises = [];
   } catch(e) { console.warn('State load error', e); }
 }
 function saveState() {
@@ -255,7 +286,7 @@ function renderPlanDetailCards(plan) {
       : baseWo;
 
     const exRows = wo.exercises.map(te => {
-      const ex = EXERCISES.find(e => e.id === te.id);
+      const ex = getAllExercises().find(e => e.id === te.id);
       return { name: ex ? ex.name : te.id, sets: te.sets, reps: te.reps };
     });
 
@@ -328,7 +359,7 @@ function renderEditWoExList() {
     return;
   }
   wrap.innerHTML = editWoExercises.map((te, i) => {
-    const ex = EXERCISES.find(e => e.id === te.id);
+    const ex = getAllExercises().find(e => e.id === te.id);
     return `
       <div class="edit-ex-item">
         <div class="edit-ex-header">
@@ -368,7 +399,7 @@ function openAddExToEditWo() {
 function filterEditWoEx() {
   const query = (document.getElementById('edit-wo-ex-search')?.value || '').toLowerCase();
   const list  = document.getElementById('edit-wo-ex-options');
-  const filtered = EXERCISES.filter(e =>
+  const filtered = getAllExercises().filter(e =>
     !query || e.name.toLowerCase().includes(query) || e.muscle.toLowerCase().includes(query)
   );
   list.innerHTML = filtered.map(e => `
@@ -387,12 +418,21 @@ function addExToEditWo(exId) {
   renderEditWoExList();
 }
 
+function applyGlobalSets(val) {
+  const sets = Math.min(20, Math.max(1, parseInt(val) || 1));
+  editWoExercises.forEach((te, i) => {
+    te.sets = sets;
+    const el = document.getElementById('edit-sets-' + i);
+    if (el) el.value = sets;
+  });
+}
+
 function saveEditedWorkout() {
   if (!editWoExercises.length) { showToast('Mindestens eine Übung nötig'); return; }
   const name = document.getElementById('edit-wo-name').value.trim();
   if (!name) { showToast('Bitte einen Namen eingeben'); return; }
 
-  // Read current input values in case oninput wasn't fired for last edit
+  // Read current input values
   editWoExercises.forEach((te, i) => {
     const setsEl = document.getElementById('edit-sets-' + i);
     const repsEl = document.getElementById('edit-reps-' + i);
@@ -534,7 +574,7 @@ function renderPwExList() {
     return;
   }
   wrap.innerHTML = pwExercises.map((te, i) => {
-    const ex = EXERCISES.find(e => e.id === te.id);
+    const ex = getAllExercises().find(e => e.id === te.id);
     return `
       <div class="tpl-ex-item">
         <div class="tpl-ex-item-header">
@@ -566,7 +606,7 @@ function openAddExToPw() {
 function filterPwEx() {
   const query = (document.getElementById('pw-ex-search')?.value || '').toLowerCase();
   const list  = document.getElementById('pw-ex-options');
-  const filtered = EXERCISES.filter(e =>
+  const filtered = getAllExercises().filter(e =>
     !query || e.name.toLowerCase().includes(query) || e.muscle.toLowerCase().includes(query)
   );
   list.innerHTML = filtered.map(e => `
@@ -602,9 +642,11 @@ function saveWorkoutToPlan() {
 let session = null;
 let elapsedInterval = null;
 let timerInterval   = null;
-let timerSecs    = 180;   // default 3 min
-let timerTotal   = 180;   // track full duration for circle
-let timerRunning = false;
+let timerSecs      = 180;
+let timerTotal     = 180;
+let timerRunning   = false;
+let timerStartedAt = null;  // absolute timestamp when timer started
+let timerSecsAtStart = 180; // secs remaining when timer started
 
 // Returns last used {kg, reps} — from lastUsed cache first, then history
 function getLastPerformance(exId) {
@@ -644,23 +686,44 @@ function fmtTime(s) {
 // Timer
 function toggleTimer() {
   if (timerRunning) {
+    // Pause — save remaining secs
+    timerSecs = getRemainingTimerSecs();
+    timerSecsAtStart = timerSecs;
     clearInterval(timerInterval); timerRunning = false;
     document.getElementById('timer-play').style.display  = '';
     document.getElementById('timer-pause').style.display = 'none';
+    updateTimerDisplay();
   } else {
-    timerRunning = true;
+    timerRunning     = true;
+    timerStartedAt   = Date.now();
+    timerSecsAtStart = timerSecs;
     document.getElementById('timer-play').style.display  = 'none';
     document.getElementById('timer-pause').style.display = '';
     timerInterval = setInterval(() => {
-      if (timerSecs > 0) { timerSecs--; updateTimerDisplay(); }
-      else { resetTimer(); showSetDoneToast(); }
-    }, 1000);
+      const remaining = getRemainingTimerSecs();
+      if (remaining > 0) {
+        timerSecs = remaining;
+        updateTimerDisplay();
+      } else {
+        timerSecs = 0;
+        updateTimerDisplay();
+        resetTimer();
+        showSetDoneToast();
+      }
+    }, 500); // check every 500ms for accuracy
     updateTimerCircle();
   }
 }
+
+// Calculate remaining time using absolute timestamps — works in background
+function getRemainingTimerSecs() {
+  if (!timerRunning || !timerStartedAt) return timerSecs;
+  const elapsed = Math.floor((Date.now() - timerStartedAt) / 1000);
+  return Math.max(0, timerSecsAtStart - elapsed);
+}
 function resetTimer() {
   clearInterval(timerInterval); timerRunning = false;
-  timerSecs = timerTotal;
+  timerSecs = timerTotal; timerStartedAt = null; timerSecsAtStart = timerTotal;
   updateTimerDisplay();
   updateTimerCircle();
   document.getElementById('timer-play').style.display  = '';
@@ -687,7 +750,8 @@ function updateTimerCircle() {
   const el = document.getElementById('timer-progress');
   if (!el) return;
   const circumference = 301.6;
-  const fraction = timerTotal > 0 ? timerSecs / timerTotal : 1;
+  const current  = timerRunning ? getRemainingTimerSecs() : timerSecs;
+  const fraction = timerTotal > 0 ? current / timerTotal : 1;
   el.style.strokeDashoffset = circumference * (1 - fraction);
 }
 
@@ -719,7 +783,7 @@ function openReorderFromEdit() {
 function renderReorderList() {
   const wrap = document.getElementById('reorder-list');
   wrap.innerHTML = reorderExList.map((te, i) => {
-    const ex = EXERCISES.find(e => e.id === te.id);
+    const ex = getAllExercises().find(e => e.id === te.id);
     const name = ex ? ex.name : te.id;
     return `
       <div class="reorder-ex-item">
@@ -777,7 +841,7 @@ function _doStartWorkout(wo) {
   resetTimer();
 
   wo.exercises.forEach(tplEx => {
-    const ex = EXERCISES.find(e => e.id === tplEx.id);
+    const ex = getAllExercises().find(e => e.id === tplEx.id);
     if (!ex) return;
     const prev  = state.prs[tplEx.id];
     const last  = getLastPerformance(tplEx.id);
@@ -1090,6 +1154,43 @@ function confirmSetDone(yes) {
   if (next) toggleSetDone(next.el, next.exIdx, next.setIdx, true);
 }
 
+// ═══════════════════════════════════════════════════════
+//  CUSTOM EXERCISES
+// ═══════════════════════════════════════════════════════
+let customExCat = 'Brust';
+
+function openCreateCustomExercise() {
+  document.getElementById('custom-ex-name').value   = '';
+  document.getElementById('custom-ex-muscle').value = '';
+  customExCat = 'Brust';
+  document.querySelectorAll('#custom-ex-cats .cat-tab').forEach((b,i) =>
+    b.classList.toggle('active', i === 0));
+  document.querySelectorAll('#modal-custom-ex .emoji-opt').forEach((e,i) =>
+    e.classList.toggle('active', i === 0));
+  openModal('modal-custom-ex');
+}
+
+function selectCustomCat(el, cat) {
+  customExCat = cat;
+  document.querySelectorAll('#custom-ex-cats .cat-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function saveCustomExercise() {
+  const name   = document.getElementById('custom-ex-name').value.trim();
+  const muscle = document.getElementById('custom-ex-muscle').value.trim();
+  if (!name)   { showToast('⚠️ Name eingeben'); return; }
+  if (!muscle) { showToast('⚠️ Muskelgruppe eingeben'); return; }
+  const icon = document.querySelector('#modal-custom-ex .emoji-opt.active')?.textContent.trim() || '💪';
+  const id   = 'custom_' + Date.now();
+  if (!state.customExercises) state.customExercises = [];
+  state.customExercises.push({ id, name, muscle, cat: customExCat, icon, isCustom: true });
+  saveState();
+  closeModalById('modal-custom-ex');
+  showToast(`✅ "${name}" gespeichert!`);
+  filterExercises(); // refresh list
+}
+
 // Add exercise modal (in active workout)
 let currentExFilter = 'Alle';
 function openAddExercise() {
@@ -1113,26 +1214,34 @@ function setExFilter(cat, el) {
 function filterExercises() {
   const query = (document.getElementById('ex-search')?.value||'').toLowerCase();
   const list  = document.getElementById('exercise-options');
-  const filtered = EXERCISES.filter(e =>
+  const filtered = getAllExercises().filter(e =>
     (currentExFilter==='Alle'||e.cat===currentExFilter) &&
     (!query||e.name.toLowerCase().includes(query)||e.muscle.toLowerCase().includes(query))
   );
   list.innerHTML = filtered.map(e => `
     <div class="ex-option" onclick="addExerciseToSession('${e.id}')">
       <div class="ex-opt-icon">${e.icon}</div>
-      <div><div class="ex-opt-name">${e.name}</div><div class="ex-opt-muscle">${e.muscle}</div></div>
+      <div>
+        <div class="ex-opt-name">${e.name}${e.isCustom ? ' <span style="font-size:10px;color:var(--accent);background:var(--accent-dim);padding:1px 5px;border-radius:4px;margin-left:4px">Eigene</span>' : ''}</div>
+        <div class="ex-opt-muscle">${e.muscle}</div>
+      </div>
     </div>`).join('') || '<p class="empty-hint">Keine Übung gefunden.</p>';
 }
 function addExerciseToSession(exId) {
   closeModalById('modal-add-ex');
   if (!session) return;
-  const ex = EXERCISES.find(e => e.id === exId);
+  const ex = getAllExercises().find(e => e.id === exId);
   if (!ex) return;
   const prev = state.prs[exId];
   const last = getLastPerformance(exId);
   const autoKg   = last ? String(last.kg)   : (prev ? String(prev.kg) : '');
-  const autoReps = last ? String(last.reps)  : '10';
-  session.exercises.push({ id:exId, name:ex.name, templateSetCount:1, sets:[{kg:autoKg, reps:autoReps, done:false}] });
+  const autoReps = last ? String(last.reps) : '10';
+  // Default 3 sets when adding exercise mid-workout
+  session.exercises.push({ id:exId, name:ex.name, templateSetCount:3, sets:[
+    {kg:autoKg, reps:autoReps, done:false},
+    {kg:autoKg, reps:autoReps, done:false},
+    {kg:autoKg, reps:autoReps, done:false}
+  ]});
   activeExIdx = session.exercises.length - 1;
   renderWorkoutUI();
   document.getElementById('screen-workout').scrollTo({ top: 0, behavior: 'smooth' });
@@ -1304,8 +1413,8 @@ function getExerciseHistory(exId) {
 // Build data points for a category or "Gesamt" (volume per session)
 function getCategoryHistory(cat) {
   const exIds = cat === 'Gesamt'
-    ? EXERCISES.map(e => e.id)
-    : EXERCISES.filter(e => e.cat === cat).map(e => e.id);
+    ? getAllExercises().map(e => e.id)
+    : getAllExercises().filter(e => e.cat === cat).map(e => e.id);
 
   return [...state.workouts].reverse()
     .map(wo => {
@@ -1414,7 +1523,7 @@ function renderChart(exId) {
     unit   = 'kg Vol.';
   } else {
     points = getExerciseHistory(exId);
-    const ex = EXERCISES.find(e => e.id === exId);
+    const ex = getAllExercises().find(e => e.id === exId);
     title = ex?.name || exId;
     unit  = 'kg (Ø)';
   }
@@ -1460,7 +1569,7 @@ function buildChartPicker() {
   state.workouts.forEach(wo => {
     wo.exercises.forEach(ex => {
       if (ex.sets.some(s => s.done && parseFloat(s.kg) > 0)) {
-        const found = EXERCISES.find(e => e.id === ex.id);
+        const found = getAllExercises().find(e => e.id === ex.id);
         if (found) loggedCats.add(found.cat);
       }
     });
@@ -1511,7 +1620,7 @@ function refreshProgress() {
     const showAllP = prList.dataset.showAll === '1';
     const visibleP = showAllP ? sorted : sorted.slice(0, 3);
     prList.innerHTML = visibleP.map(([id,pr]) => {
-      const ex = EXERCISES.find(e=>e.id===id);
+      const ex = getAllExercises().find(e=>e.id===id);
       const d  = new Date(pr.date).toLocaleDateString('de-DE',{day:'numeric',month:'short'});
       return `<div class="pr-row">
         <div>
@@ -1599,6 +1708,7 @@ function loadSettingsUI() {
     document.getElementById('profile-since').textContent =
       'Dabei seit '+first.toLocaleDateString('de-DE',{month:'long',year:'numeric'});
   }
+  renderCustomExercisesList();
 }
 // ─── Time Picker ─────────────────────────────────────────
 function openTimePicker() {
@@ -1743,23 +1853,112 @@ function requestNotificationPermission() {
   });
 }
 
+function toggleNotification() {
+  if (!('Notification' in window)) { showToast('⚠️ Nicht unterstützt'); return; }
+
+  if (state.settings.notificationsEnabled) {
+    // Turn OFF
+    state.settings.notificationsEnabled = false;
+    saveState();
+    updateNotifUI(Notification.permission);
+    // Tell Supabase to disable
+    const subId = localStorage.getItem('gymtracker_sub_id');
+    if (subId) {
+      fetch(`${SUPABASE_URL}/rest/v1/push_subscriptions?id=eq.${subId}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ enabled: false })
+      }).catch(() => {});
+    }
+    showToast('🔕 Reminder deaktiviert');
+    return;
+  }
+
+  // Turn ON
+  if (Notification.permission === 'denied') {
+    showToast('❌ Blockiert — in Browser-Einstellungen erlauben');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    state.settings.notificationsEnabled = true;
+    saveState();
+    updateNotifUI('granted');
+    scheduleReminder(state.settings.reminderTime || '17:30');
+    showToast('🔔 Reminder aktiviert!');
+  } else {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') {
+        state.settings.notificationsEnabled = true;
+        saveState();
+        updateNotifUI('granted');
+        scheduleReminder(state.settings.reminderTime || '17:30');
+        showToast('🔔 Reminder aktiviert!');
+      } else {
+        showToast('❌ Erlaubnis verweigert');
+      }
+    });
+  }
+}
+
 function updateNotifUI(permission) {
   const toggle = document.getElementById('notif-toggle');
   const status = document.getElementById('notif-status');
   if (!toggle || !status) return;
-  if (permission === 'granted') {
-    toggle.classList.add('on');
-    toggle.querySelector('.toggle-thumb').style.left = '22px';
+  const thumb = toggle.querySelector('.toggle-thumb');
+  // Green only if BOTH browser permission granted AND user enabled it
+  const isOn = permission === 'granted' && state.settings.notificationsEnabled === true;
+  toggle.classList.toggle('on', isOn);
+  if (thumb) thumb.style.left = isOn ? '22px' : '3px';
+  if (isOn) {
     status.textContent = 'Aktiv · ' + (state.settings.reminderTime || '17:30') + ' Uhr';
   } else if (permission === 'denied') {
-    toggle.classList.remove('on');
-    toggle.querySelector('.toggle-thumb').style.left = '3px';
     status.textContent = 'Blockiert — in Browser-Einstellungen ändern';
+  } else if (permission === 'granted') {
+    status.textContent = 'Deaktiviert — tippen zum Aktivieren';
   } else {
-    toggle.classList.remove('on');
-    toggle.querySelector('.toggle-thumb').style.left = '3px';
     status.textContent = 'Tippen zum Aktivieren';
   }
+}
+
+// ── Custom Exercises Management ─────────────────────────
+function renderCustomExercisesList() {
+  const wrap = document.getElementById('custom-ex-manage-list');
+  if (!wrap) return;
+  const exs = state.customExercises || [];
+  if (!exs.length) {
+    wrap.innerHTML = '<p class="empty-hint" style="padding:0">Noch keine eigenen Übungen.</p>';
+    return;
+  }
+  wrap.innerHTML = exs.map((ex, i) => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:6px">
+      <span style="font-size:18px">${ex.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">${ex.name}</div>
+        <div style="font-size:11px;color:var(--text3)">${ex.muscle} · ${ex.cat}</div>
+      </div>
+      <button onclick="deleteCustomExercise(${i})"
+        style="background:rgba(226,75,74,.1);border:.5px solid rgba(226,75,74,.3);color:var(--red);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit">
+        ×
+      </button>
+    </div>`).join('');
+}
+
+function deleteCustomExercise(idx) {
+  showConfirm({
+    icon: '🗑️', title: 'Übung löschen',
+    msg: `"${state.customExercises[idx].name}" wird gelöscht.`,
+    okLabel: 'Löschen', okColor: 'var(--red)',
+    onOk: () => {
+      state.customExercises.splice(idx, 1);
+      saveState();
+      renderCustomExercisesList();
+      showToast('🗑️ Übung gelöscht');
+    }
+  });
 }
 
 function selectGoal(el) {
@@ -1878,6 +2077,11 @@ function setGreeting() {
     h<12?'Guten Morgen 👋':h<18?'Guten Tag 👋':'Guten Abend 👋';
   document.getElementById('greeting-name').textContent =
     (state.settings.name||'Sportler').split(' ')[0];
+  // Fix initials on every load
+  const name = state.settings.name || 'GT';
+  const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2) || 'GT';
+  const avatarBtn = document.getElementById('avatar-btn');
+  if (avatarBtn) avatarBtn.textContent = initials;
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1942,6 +2146,21 @@ const SWIPE_MIN_X   = 35;   // min horizontal distance px
 const SWIPE_MAX_Y   = 100;  // max vertical drift px
 const SWIPE_MAX_MS  = 600;  // max duration ms
 const SWIPE_EDGE    = 40;   // ignore swipes starting too close to edge (scrollbars)
+
+// Resync timer when app comes back from background
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && timerRunning) {
+    // Recalculate remaining time
+    timerSecs = getRemainingTimerSecs();
+    if (timerSecs <= 0) {
+      resetTimer();
+      showSetDoneToast();
+    } else {
+      updateTimerDisplay();
+      updateTimerCircle();
+    }
+  }
+});
 
 function initSwipe() {
   const app = document.getElementById('app');
