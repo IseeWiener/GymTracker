@@ -282,6 +282,11 @@
       </div>
     </div>
 
+    <div class="sec-label">Eigene Übungen</div>
+    <div style="padding:0 16px 8px">
+      <div id="custom-ex-manage-list"></div>
+    </div>
+
     <div class="sec-label">Daten</div>
     <div class="setting-group">
       <div class="setting-row" onclick="exportData()" style="cursor:pointer">
@@ -299,20 +304,6 @@
         <span class="chevron">›</span>
       </label>
       <input type="file" id="import-file" accept=".json" style="display:none;position:absolute;width:0;height:0" onchange="importData(this)">
-      <div class="setting-row" onclick="sendTestNotification()" style="cursor:pointer">
-        <div class="setting-left">
-          <div class="setting-icon si-amber">🔔</div>
-          <div><div class="setting-name">Test-Benachrichtigung</div><div class="setting-sub">Prüfen ob Notifications klappen</div></div>
-        </div>
-        <span class="chevron">›</span>
-      </div>
-      <div class="setting-row" onclick="checkForUpdates()" style="cursor:pointer">
-        <div class="setting-left">
-          <div class="setting-icon si-blue">🔄</div>
-          <div><div class="setting-name">Nach Updates suchen</div><div class="setting-sub">Neue Version laden</div></div>
-        </div>
-        <span class="chevron">›</span>
-      </div>
       <div class="setting-row" onclick="clearData()" style="cursor:pointer">
         <div class="setting-left">
           <div class="setting-icon si-red">🗑️</div>
@@ -349,7 +340,10 @@
 <div id="modal-add-ex" class="modal-overlay" onclick="closeModalById('modal-add-ex',event)">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">Übung hinzufügen</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="modal-title" style="margin-bottom:0">Übung hinzufügen</div>
+      <button class="tpl-edit-btn" onclick="openCreateCustomExercise()">+ Eigene</button>
+    </div>
     <input id="ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterExercises()">
     <div id="ex-category-tabs" class="category-tabs"></div>
     <div id="exercise-options" class="ex-option-list"></div>
@@ -434,6 +428,7 @@
 <div id="modal-pw-ex" class="modal-overlay" onclick="closeModalById('modal-pw-ex',event)">
   <div class="modal-box">
     <div class="modal-handle"></div>
+    <div class="modal-handle"></div>
     <div class="modal-title">Übung wählen</div>
     <input id="pw-ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterPwEx()">
     <div id="pw-ex-options" class="ex-option-list"></div>
@@ -451,6 +446,16 @@
     <div class="field-group">
       <label class="field-label">Name</label>
       <input id="edit-wo-name" class="field-input" type="text" placeholder="Workout-Name">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Sätze für alle Übungen</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input class="field-input" type="number" inputmode="numeric" min="1" max="20"
+          placeholder="z.B. 3" style="width:80px"
+          oninput="applyGlobalSets(this.value)">
+        <span style="font-size:12px;color:var(--text3)">Ändert alle Übungen gleichzeitig</span>
+      </div>
     </div>
 
     <div class="field-group">
@@ -475,7 +480,11 @@
 <div id="modal-edit-wo-ex" class="modal-overlay" onclick="closeModalById('modal-edit-wo-ex',event)">
   <div class="modal-box">
     <div class="modal-handle"></div>
-    <div class="modal-title">Übung hinzufügen</div>
+    <div class="modal-handle"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div class="modal-title" style="margin-bottom:0">Übung hinzufügen</div>
+      <button class="tpl-edit-btn" onclick="openCreateCustomExercise()">+ Eigene</button>
+    </div>
     <input id="edit-wo-ex-search" class="search-input" type="text" placeholder="Suchen..." oninput="filterEditWoEx()">
     <div id="edit-wo-ex-options" class="ex-option-list"></div>
   </div>
@@ -490,6 +499,45 @@
     </div>
     <div id="reorder-list" style="display:flex;flex-direction:column;gap:8px"></div>
     <button class="btn-primary mt8" onclick="saveReorder()">Reihenfolge speichern</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Eigene Übung erstellen ═══ -->
+<div id="modal-custom-ex" class="modal-overlay" onclick="closeModalById('modal-custom-ex',event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Eigene Übung erstellen</div>
+    <div class="field-group">
+      <label class="field-label">Name</label>
+      <input id="custom-ex-name" class="field-input" type="text" placeholder="z.B. Langhantel Curl">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Muskelgruppe</label>
+      <input id="custom-ex-muscle" class="field-input" type="text" placeholder="z.B. Bizeps">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Kategorie</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px" id="custom-ex-cats">
+        <button class="cat-tab active" onclick="selectCustomCat(this,'Brust')">Brust</button>
+        <button class="cat-tab" onclick="selectCustomCat(this,'Schultern')">Schultern</button>
+        <button class="cat-tab" onclick="selectCustomCat(this,'Arme')">Arme</button>
+        <button class="cat-tab" onclick="selectCustomCat(this,'Beine')">Beine</button>
+        <button class="cat-tab" onclick="selectCustomCat(this,'Rücken')">Rücken</button>
+        <button class="cat-tab" onclick="selectCustomCat(this,'Core')">Core</button>
+      </div>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Emoji</label>
+      <div class="emoji-row">
+        <span class="emoji-opt active" onclick="selectEmoji(this)">💪</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🏋️</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🦵</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🔱</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">🔥</span>
+        <span class="emoji-opt" onclick="selectEmoji(this)">⚡</span>
+      </div>
+    </div>
+    <button class="btn-primary mt8" onclick="saveCustomExercise()">Übung speichern</button>
   </div>
 </div>
 
