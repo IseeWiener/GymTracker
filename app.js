@@ -805,7 +805,6 @@ function reorderMove(idx, dir) {
 }
 
 function saveReorder() {
-  // Save the reordered exercise list back to the workout override
   if (!pendingWorkout || !editWoPlanId || !editWoId) {
     closeModalById('modal-reorder'); return;
   }
@@ -816,11 +815,15 @@ function saveReorder() {
     ...existing,
     exercises: reorderExList
   };
+  // Also update editWoExercises so the edit modal reflects new order
+  editWoExercises = reorderExList.map(e => ({ ...e }));
   saveState();
   closeModalById('modal-reorder');
   showToast('✅ Reihenfolge gespeichert!');
+  // Re-render plan detail and edit modal list immediately
   const plan = [...DEFAULT_PLANS, ...state.plans].find(p => p.id === editWoPlanId);
   if (plan) renderPlanDetailCards(plan);
+  renderEditWoExList();
 }
 
 function _doStartWorkout(wo) {
@@ -2012,9 +2015,28 @@ function showScreen(id) {
 function openModal(id) {
   const el = document.getElementById(id);
   el.classList.add('open');
-  // scroll modal box to top
   const box = el.querySelector('.modal-box');
-  if (box) box.scrollTop = 0;
+  if (box) {
+    box.scrollTop = 0;
+    // Add swipe-down-to-close
+    addSwipeDownToClose(box, () => closeModalById(id));
+  }
+}
+
+function addSwipeDownToClose(el, onClose) {
+  let startY = 0;
+  let isDragging = false;
+  el.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY;
+    isDragging = true;
+  }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (!isDragging) return;
+    const dy = e.changedTouches[0].clientY - startY;
+    isDragging = false;
+    // Swipe down > 80px and modal is scrolled to top → close
+    if (dy > 80 && el.scrollTop <= 5) onClose();
+  }, { passive: true });
 }
 function closeModalById(id, e) {
   if (!e||e.target===document.getElementById(id))
@@ -2245,6 +2267,27 @@ function seedDemoData() {
   refreshProgress();
   showToast('✅ Demo-Daten geladen!');
 }
+
+// ═══════════════════════════════════════════════════════
+//  BACK BUTTON / DOUBLE-TAP TO EXIT
+// ═══════════════════════════════════════════════════════
+let lastBackPress = 0;
+
+// Android hardware back button
+window.addEventListener('popstate', () => {
+  const now = Date.now();
+  if (now - lastBackPress < 2000) {
+    // Second press within 2s → exit
+    window.history.go(-1);
+  } else {
+    lastBackPress = now;
+    showToast('⬅ Nochmal drücken zum Beenden');
+    window.history.pushState(null, '', window.location.href);
+  }
+});
+
+// Push initial state so popstate fires on back press
+window.history.pushState(null, '', window.location.href);
 
 // ═══════════════════════════════════════════════════════
 //  INIT
