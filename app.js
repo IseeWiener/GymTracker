@@ -2018,8 +2018,23 @@ function openModal(id) {
   const box = el.querySelector('.modal-box');
   if (box) {
     box.scrollTop = 0;
-    // Add swipe-down-to-close
     addSwipeDownToClose(box, () => closeModalById(id));
+  }
+  // When keyboard opens, scroll search input into view
+  const searchInput = el.querySelector('.search-input');
+  if (searchInput) {
+    searchInput.addEventListener('focus', () => {
+      setTimeout(() => {
+        searchInput.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Also resize modal to sit above keyboard
+        const box = el.querySelector('.modal-box');
+        if (box) box.style.maxHeight = '55vh';
+      }, 300);
+    }, { once: false });
+    searchInput.addEventListener('blur', () => {
+      const box = el.querySelector('.modal-box');
+      if (box) box.style.maxHeight = '';
+    }, { once: false });
   }
 }
 
@@ -2168,6 +2183,27 @@ const SWIPE_MIN_X   = 35;   // min horizontal distance px
 const SWIPE_MAX_Y   = 100;  // max vertical drift px
 const SWIPE_MAX_MS  = 600;  // max duration ms
 const SWIPE_EDGE    = 40;   // ignore swipes starting too close to edge (scrollbars)
+
+// Keyboard resize — keep modal above keyboard
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const openModal = document.querySelector('.modal-overlay.open');
+    if (!openModal) return;
+    const box = openModal.querySelector('.modal-box');
+    if (!box) return;
+    const active = document.activeElement;
+    const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    if (isTyping) {
+      // Keyboard is open — shrink modal so it fits above keyboard
+      const kbHeight = window.innerHeight - window.visualViewport.height;
+      box.style.maxHeight = `calc(90vh - ${kbHeight}px)`;
+      // Scroll active input into view inside modal
+      setTimeout(() => active.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+    } else {
+      box.style.maxHeight = '';
+    }
+  });
+}
 
 // Resync timer when app comes back from background
 document.addEventListener('visibilitychange', () => {
