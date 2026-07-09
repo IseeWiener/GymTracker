@@ -137,6 +137,41 @@ const DEFAULT_PLANS = [
     ]
   },
   {
+    id:'bro', name:'Bro Split', icon:'💪', isDefault:true,
+    workouts:[
+      { id:'bro-chest', name:'Brusttag', icon:'🏋️',
+        exercises:[
+          {id:'bench',sets:3,reps:10},{id:'incline',sets:3,reps:10},
+          {id:'pec_deck',sets:3,reps:10},{id:'cable_cross',sets:3,reps:10},
+          {id:'dips_chest',sets:3,reps:10}
+        ]},
+      { id:'bro-back', name:'Rückentag', icon:'🔱',
+        exercises:[
+          {id:'pullup',sets:3,reps:10},{id:'row_lh',sets:3,reps:10},
+          {id:'lat_pull',sets:3,reps:10},{id:'tbar_row',sets:3,reps:10},
+          {id:'hyperext',sets:3,reps:10}
+        ]},
+      { id:'bro-shoulder', name:'Schultertag', icon:'🏋️',
+        exercises:[
+          {id:'ohp',sets:3,reps:10},{id:'lateral',sets:3,reps:10},
+          {id:'front_raise',sets:3,reps:10},{id:'face_pull',sets:3,reps:10},
+          {id:'shrug',sets:3,reps:10}
+        ]},
+      { id:'bro-arms', name:'Armtag', icon:'💪',
+        exercises:[
+          {id:'curl',sets:3,reps:10},{id:'hammer',sets:3,reps:10},
+          {id:'preacher',sets:3,reps:10},{id:'triceps_kabel',sets:3,reps:10},
+          {id:'skull',sets:3,reps:10},{id:'tri_overhead',sets:3,reps:10}
+        ]},
+      { id:'bro-legs', name:'Beintag', icon:'🦵',
+        exercises:[
+          {id:'squat',sets:3,reps:10},{id:'leg_press',sets:3,reps:10},
+          {id:'rdl',sets:3,reps:10},{id:'leg_curl',sets:3,reps:10},
+          {id:'leg_ext',sets:3,reps:10},{id:'calf',sets:3,reps:10}
+        ]},
+    ]
+  },
+  {
     id:'fb', name:'Fullbody', icon:'⚡', isDefault:true,
     workouts:[
       { id:'fb-a', name:'Fullbody A', icon:'⚡',
@@ -257,6 +292,13 @@ function buildPlanCard(plan, isLast) {
 // ═══════════════════════════════════════════════════════
 let currentPlanId = null;
 
+let highlightedWorkoutId = null;
+
+function openPlanDetailHighlighted(planId, woId) {
+  highlightedWorkoutId = woId;
+  openPlanDetail(planId);
+}
+
 function openPlanDetail(planId) {
   const plan = [...DEFAULT_PLANS, ...state.plans].find(p => p.id === planId);
   if (!plan) return;
@@ -269,6 +311,18 @@ function openPlanDetail(planId) {
   editBtn.style.display = plan.isDefault ? 'none' : 'flex';
 
   renderPlanDetailCards(plan);
+  // Scroll to highlighted workout
+  if (highlightedWorkoutId) {
+    setTimeout(() => {
+      const cards = document.querySelectorAll('.detail-workout-card');
+      cards.forEach(c => {
+        if (c.style.borderColor.includes('accent') || c.querySelector('[style*="Als nächstes"]')) {
+          c.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+      highlightedWorkoutId = null;
+    }, 150);
+  }
   showScreen('plan-detail');
 }
 
@@ -294,11 +348,13 @@ function renderPlanDetailCards(plan) {
     const card = document.createElement('div');
     card.className = 'detail-workout-card';
     card.id = 'dwc-' + baseWo.id;
+    const isHighlighted = highlightedWorkoutId === baseWo.id;
+    if (isHighlighted) card.style.borderColor = 'var(--accent)';
     card.innerHTML = `
       <div class="dwc-header">
         <div class="dwc-icon">${wo.icon || '💪'}</div>
         <div style="flex:1;min-width:0">
-          <div class="dwc-name">${wo.name}</div>
+          <div class="dwc-name">${wo.name}${isHighlighted ? ' <span style="font-size:10px;background:var(--accent);color:#000;padding:2px 7px;border-radius:5px;margin-left:6px;font-weight:700">Als nächstes</span>' : ''}</div>
           <div class="dwc-meta">${wo.exercises.length} Übungen · ca. ${totalSets * 2} min</div>
         </div>
         <button class="dwc-edit-btn" onclick="openEditWorkout('${plan.id}','${baseWo.id}')">
@@ -1347,9 +1403,27 @@ function refreshDashboard() {
   }
   const showAll = list.dataset.showAll === '1';
   const visibleW = showAll ? state.workouts : state.workouts.slice(0, 3);
+  // Next workout suggestion banner
+  const next = getNextWorkoutSuggestion();
+  const nextHtml = next ? `
+    <div style="background:var(--accent-dim);border:.5px solid var(--accent-mid);border-radius:var(--radius-md);
+      margin:0 16px 12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer"
+      onclick="openPlanDetailHighlighted('${next.plan.id}','${next.workout.id}')">
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.06em;text-transform:uppercase">Als nächstes</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-top:2px">${next.workout.icon || '💪'} ${next.workout.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${next.plan.name}</div>
+      </div>
+      <span style="font-size:22px;color:var(--accent)">▶</span>
+    </div>` : '';
+
+  // Inject next suggestion before list
+  const nextEl = document.getElementById('next-workout-banner');
+  if (nextEl) nextEl.innerHTML = nextHtml;
+
   list.innerHTML = visibleW.map(w => {
     const d = new Date(w.date).toLocaleDateString('de-DE',{weekday:'short',day:'numeric',month:'short'});
-    return `<div class="workout-row">
+    return `<div class="workout-row" id="wo-${w.id}">
       <div class="wicon" style="background:var(--accent-dim)">🏋️</div>
       <div class="winfo">
         <div class="wname">${w.name}</div>
@@ -1358,6 +1432,10 @@ function refreshDashboard() {
       <div class="wbadge">${calcVol(w).toLocaleString('de-DE')} kg</div>
     </div>`;
   }).join('');
+  visibleW.forEach(w => {
+    const el = document.getElementById('wo-' + w.id);
+    if (el) addLongPressDelete(el, w.id);
+  });
   if (state.workouts.length > 3) {
     list.innerHTML += showAll
       ? `<button class="show-more-btn" onclick="toggleShowAll('history-list')">▲ Weniger anzeigen</button>`
@@ -1380,22 +1458,22 @@ let chartExId = null; // currently selected exercise in chart
 
 // ── Data helpers ────────────────────────────────────────
 
-// Average kg of all done sets for one exercise in one workout
+// Max kg of done sets for one exercise in one workout
+function maxKgForEx(wo, exId) {
+  const ex = wo.exercises.find(e => e.id === exId);
+  if (!ex) return null;
+  const done = ex.sets.filter(s => s.done && parseFloat(s.kg) > 0);
+  if (!done.length) return null;
+  return Math.max(...done.map(s => parseFloat(s.kg)));
+}
+
+// Avg kg of done sets for one exercise (for single-exercise chart)
 function avgKgForEx(wo, exId) {
   const ex = wo.exercises.find(e => e.id === exId);
   if (!ex) return null;
   const done = ex.sets.filter(s => s.done && parseFloat(s.kg) > 0);
   if (!done.length) return null;
   return done.reduce((s, set) => s + parseFloat(set.kg), 0) / done.length;
-}
-
-// Volume (kg × reps × sets) for a list of exercise IDs in one workout
-function volumeForExIds(wo, exIds) {
-  return wo.exercises
-    .filter(e => exIds.includes(e.id))
-    .reduce((total, ex) =>
-      total + ex.sets.reduce((s, set) =>
-        s + (set.done ? (parseFloat(set.kg)||0) * (parseInt(set.reps)||0) : 0), 0), 0);
 }
 
 // Build data points for a single exercise (avg kg per session)
@@ -1413,21 +1491,36 @@ function getExerciseHistory(exId) {
     }).filter(Boolean);
 }
 
-// Build data points for a category or "Gesamt" (volume per session)
+// Category: avg of max-kg per exercise trained in this session
+// Gesamt: avg of all category averages (each category weighted equally)
 function getCategoryHistory(cat) {
-  const exIds = cat === 'Gesamt'
-    ? getAllExercises().map(e => e.id)
-    : getAllExercises().filter(e => e.cat === cat).map(e => e.id);
+  const allEx = getAllExercises();
 
   return [...state.workouts].reverse()
     .map(wo => {
-      const vol = volumeForExIds(wo, exIds);
-      if (!vol) return null;
+      let avg = null;
+
+      if (cat === 'Gesamt') {
+        const cats = ['Brust','Schultern','Arme','Beine','Rücken','Core'];
+        const catAvgs = cats.map(c => {
+          const ids = allEx.filter(e => e.cat === c).map(e => e.id);
+          const maxKgs = ids.map(id => maxKgForEx(wo, id)).filter(v => v !== null);
+          return maxKgs.length ? maxKgs.reduce((a,b) => a+b,0) / maxKgs.length : null;
+        }).filter(v => v !== null);
+        if (!catAvgs.length) return null;
+        avg = catAvgs.reduce((a,b) => a+b,0) / catAvgs.length;
+      } else {
+        const ids = allEx.filter(e => e.cat === cat).map(e => e.id);
+        const maxKgs = ids.map(id => maxKgForEx(wo, id)).filter(v => v !== null);
+        if (!maxKgs.length) return null;
+        avg = maxKgs.reduce((a,b) => a+b,0) / maxKgs.length;
+      }
+
       return {
         date:  wo.date,
-        value: vol,
+        value: Math.round(avg * 10) / 10,
         label: new Date(wo.date).toLocaleDateString('de-DE', { day:'numeric', month:'short' }),
-        unit:  'kg Vol.'
+        unit:  'kg (Ø Max)'
       };
     }).filter(Boolean);
 }
@@ -1517,13 +1610,13 @@ function renderChart(exId) {
 
   if (exId === '__total__') {
     points = getCategoryHistory('Gesamt');
-    title  = 'Gesamt-Volumen';
-    unit   = 'kg Vol.';
+    title  = 'Gesamtentwicklung';
+    unit   = 'kg (Ø)';
   } else if (exId.startsWith('__cat__')) {
     const cat = exId.replace('__cat__', '');
     points = getCategoryHistory(cat);
-    title  = cat + ' (Volumen)';
-    unit   = 'kg Vol.';
+    title  = cat + ' — Ø Maximalgewicht';
+    unit   = 'kg (Ø Max)';
   } else {
     points = getExerciseHistory(exId);
     const ex = getAllExercises().find(e => e.id === exId);
@@ -1540,12 +1633,9 @@ function renderChart(exId) {
 
   const first = points[0].value, last = points[points.length-1].value;
   const delta = last - first;
-  const deltaStr = (delta >= 0 ? '+' : '') +
-    (unit === 'kg Vol.' ? (delta/1000).toFixed(1)+'t' : delta.toFixed(1)+' kg');
+  const deltaStr = (delta >= 0 ? '+' : '') + delta.toFixed(1) + ' kg';
   const deltaColor = delta >= 0 ? 'var(--accent)' : '#e24b4a';
-  const lastStr = unit === 'kg Vol.'
-    ? (last/1000).toFixed(1) + 't'
-    : last.toFixed(1) + ' kg';
+  const lastStr = last.toFixed(1) + ' kg';
 
   wrap.innerHTML = `
     <div class="chart-card">
@@ -1648,11 +1738,15 @@ function refreshProgress() {
     const visibleH = showAllH ? state.workouts : state.workouts.slice(0, 3);
     histEl.innerHTML = visibleH.map(w => {
       const d = new Date(w.date).toLocaleDateString('de-DE',{day:'numeric',month:'short',weekday:'short'});
-      return `<div class="hist-row">
+      return `<div class="hist-row" id="hist-${w.id}">
         <div><div class="hist-name">${w.name}</div><div class="hist-meta">${d} · ${Math.floor(w.duration/60)} min</div></div>
         <div style="font-size:12px;color:var(--text3)">${calcVol(w).toLocaleString('de-DE')} kg</div>
       </div>`;
     }).join('');
+    visibleH.forEach(w => {
+      const el = document.getElementById('hist-' + w.id);
+      if (el) addLongPressDelete(el, w.id);
+    });
     if (state.workouts.length > 3) {
       histEl.innerHTML += showAllH
         ? `<button class="show-more-btn" onclick="toggleShowAll('prog-history')">▲ Weniger anzeigen</button>`
@@ -2326,9 +2420,122 @@ window.addEventListener('popstate', () => {
 window.history.pushState(null, '', window.location.href);
 
 // ═══════════════════════════════════════════════════════
+//  ONBOARDING
+// ═══════════════════════════════════════════════════════
+let obSelectedPlanId = 'ppl';
+let obSelectedGoal   = 'muscle';
+
+function checkOnboarding() {
+  if (state.settings.onboardingDone) return;
+  const planList = document.getElementById('ob-plan-list');
+  if (planList) {
+    // Only show the 3 main plans in onboarding (not Bro Split)
+    const obPlans = DEFAULT_PLANS.filter(p => ['ppl','ul','fb'].includes(p.id));
+    planList.innerHTML = obPlans.map(p => `
+      <div class="ob-plan-card ${p.id === 'ppl' ? 'selected' : ''}"
+        id="ob-plan-${p.id}" onclick="obSelectPlan('${p.id}',this)">
+        <span class="ob-plan-icon">${p.icon}</span>
+        <div>
+          <div class="ob-plan-name">${p.name}</div>
+          <div class="ob-plan-sub">${p.workouts.length} Workouts</div>
+        </div>
+      </div>`).join('');
+  }
+  document.getElementById('onboarding').classList.remove('hidden');
+}
+
+function obSelectGoal(el) {
+  document.querySelectorAll('#ob-step-2 .goal-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  obSelectedGoal = el.dataset.goal;
+}
+
+function obSelectPlan(id, el) {
+  obSelectedPlanId = id;
+  document.querySelectorAll('.ob-plan-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function obNext(step) {
+  if (step === 1) {
+    const name = document.getElementById('ob-name').value.trim();
+    if (!name) { showToast('Bitte deinen Namen eingeben'); return; }
+    state.settings.name = name;
+  }
+  document.getElementById('ob-step-' + step).classList.add('hidden');
+  document.getElementById('ob-step-' + (step + 1)).classList.remove('hidden');
+  document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('active', i === step));
+}
+
+function obFinish() {
+  state.settings.goal           = obSelectedGoal;
+  state.settings.onboardingDone = true;
+  if (obSelectedPlanId !== 'custom') {
+    state.lastUsedPlanId = obSelectedPlanId;
+  }
+  saveState();
+  document.getElementById('onboarding').classList.add('hidden');
+  setGreeting();
+  refreshDashboard();
+  if (obSelectedPlanId === 'custom') {
+    showToast("Willkommen! Erstelle deinen eigenen Plan unter Pläne.");
+    setTimeout(() => showScreen('plans'), 800);
+  } else {
+    showToast("Willkommen! Viel Erfolg beim Training!");
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  NEXT WORKOUT SUGGESTION
+// ═══════════════════════════════════════════════════════
+function getNextWorkoutSuggestion() {
+  if (!state.workouts.length || !state.lastUsedPlanId) return null;
+  const plan = [...DEFAULT_PLANS, ...state.plans].find(p => p.id === state.lastUsedPlanId);
+  if (!plan || !plan.workouts.length) return null;
+  const lastWo  = state.workouts[0];
+  const lastIdx = plan.workouts.findIndex(w => w.name === lastWo.name);
+  const nextIdx = lastIdx >= 0 ? (lastIdx + 1) % plan.workouts.length : 0;
+  return { plan, workout: plan.workouts[nextIdx] };
+}
+
+// ═══════════════════════════════════════════════════════
+//  LONG PRESS TO DELETE WORKOUT
+// ═══════════════════════════════════════════════════════
+let longPressTimer = null;
+
+function addLongPressDelete(el, workoutId) {
+  const startPress = () => {
+    longPressTimer = setTimeout(() => {
+      showConfirm({
+        icon: '🗑️', title: 'Training löschen',
+        msg: 'Dieses Training wird unwiderruflich gelöscht.',
+        okLabel: 'Löschen', okColor: 'var(--red)',
+        onOk: () => {
+          state.workouts = state.workouts.filter(w => w.id !== workoutId);
+          saveState();
+          refreshDashboard();
+          refreshProgress();
+          showToast('Training gelöscht');
+        }
+      });
+    }, 600);
+  };
+  const cancelPress = () => clearTimeout(longPressTimer);
+  // Touch (mobile)
+  el.addEventListener('touchstart', startPress, { passive: true });
+  el.addEventListener('touchend',   cancelPress, { passive: true });
+  el.addEventListener('touchmove',  cancelPress, { passive: true });
+  // Mouse (PC)
+  el.addEventListener('mousedown', startPress);
+  el.addEventListener('mouseup',   cancelPress);
+  el.addEventListener('mouseleave',cancelPress);
+}
+
+// ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
 loadState();
 setGreeting();
 refreshDashboard();
+checkOnboarding();
 initSwipe();
