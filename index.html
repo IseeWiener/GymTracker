@@ -18,6 +18,46 @@
   <button class="update-banner-btn" onclick="applyUpdate()">Jetzt aktualisieren</button>
 </div>
 
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboarding" class="onboarding-overlay hidden">
+  <div class="onboarding-box">
+    <div class="onboarding-step" id="ob-step-1">
+      <div class="ob-icon">💪</div>
+      <div class="ob-title">Willkommen bei GymTracker</div>
+      <div class="ob-sub">Dein persönliches Trainings-Tagebuch</div>
+      <div class="field-group" style="margin-top:24px;text-align:left">
+        <label class="field-label">Wie heißt du?</label>
+        <input id="ob-name" class="field-input" type="text" placeholder="Dein Name" maxlength="30">
+      </div>
+      <button class="btn-primary mt16" onclick="obNext(1)" style="margin:16px 0 0">Weiter →</button>
+    </div>
+    <div class="onboarding-step hidden" id="ob-step-2">
+      <div class="ob-icon">🎯</div>
+      <div class="ob-title">Was ist dein Ziel?</div>
+      <div class="ob-sub">Du kannst das später ändern</div>
+      <div class="goal-grid" style="margin-top:20px">
+        <div class="goal-card active" data-goal="muscle" onclick="obSelectGoal(this)"><span class="goal-icon">💪</span><div class="goal-name">Muskelaufbau</div></div>
+        <div class="goal-card" data-goal="strength" onclick="obSelectGoal(this)"><span class="goal-icon">🏋️</span><div class="goal-name">Kraft</div></div>
+        <div class="goal-card" data-goal="fat" onclick="obSelectGoal(this)"><span class="goal-icon">🔥</span><div class="goal-name">Fettabbau</div></div>
+        <div class="goal-card" data-goal="fitness" onclick="obSelectGoal(this)"><span class="goal-icon">❤️</span><div class="goal-name">Fitness</div></div>
+      </div>
+      <button class="btn-primary mt16" onclick="obNext(2)" style="margin:16px 0 0">Weiter →</button>
+    </div>
+    <div class="onboarding-step hidden" id="ob-step-3">
+      <div class="ob-icon">📋</div>
+      <div class="ob-title">Wähle deinen ersten Plan</div>
+      <div class="ob-sub">Du kannst jederzeit wechseln</div>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px" id="ob-plan-list"></div>
+      <button class="btn-primary mt16" onclick="obFinish()" style="margin:16px 0 0">Los geht's! 🚀</button>
+    </div>
+    <div class="ob-dots">
+      <span class="ob-dot active" id="ob-dot-0"></span>
+      <span class="ob-dot" id="ob-dot-1"></span>
+      <span class="ob-dot" id="ob-dot-2"></span>
+    </div>
+  </div>
+</div>
+
 <div id="app">
 
   <!-- ═══ SCREEN: HOME ═══ -->
@@ -62,6 +102,7 @@
       Training starten
     </button>
 
+    <div id="next-workout-banner"></div>
     <div class="sec-label">Letzte Workouts</div>
     <div id="history-list">
       <p class="empty-hint">Noch kein Training gespeichert.</p>
