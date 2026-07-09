@@ -1701,3 +1701,40 @@ html, body {
   z-index: 2;
   background: #1c1c1c;
 }
+
+/* ─── ONBOARDING ─────────────────────────────────────── */
+.onboarding-overlay {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.onboarding-overlay.hidden { display: none; }
+.onboarding-box { width: 100%; max-width: 380px; }
+.onboarding-step { text-align: center; }
+.onboarding-step.hidden { display: none; }
+.ob-icon  { font-size: 56px; margin-bottom: 16px; }
+.ob-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.ob-sub   { font-size: 14px; color: var(--text3); line-height: 1.5; }
+.ob-plan-card {
+  background: var(--bg2);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  transition: border-color .15s;
+}
+.ob-plan-card.selected { border-color: var(--accent); background: var(--accent-dim); }
+.ob-plan-icon { font-size: 24px; }
+.ob-plan-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.ob-plan-sub  { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.ob-dots { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
+.ob-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border2); transition: background .2s; }
+.ob-dot.active { background: var(--accent); }
